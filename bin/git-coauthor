@@ -1,0 +1,113 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'yaml'
+
+def fail(message)
+  warn(message)
+  exit 1
+end
+
+options = {}
+
+parser = OptionParser.new do |opts|
+  Version = '1.0.0'
+
+  opts.banner = <<~EOF
+    Adds coauthors to the previous commit.
+
+    Usage: git coauthor [option...] [alias...]
+
+    To install, add this script to your PATH, then run one of the following:
+
+        git config --global alias.coauthor '!git-coauthor' # All repos
+        git config alias.coauthor '!git-coauthor'          # Current repo only
+
+    To configure, create a .git-coauthors file in your home directory and/or at the root of your Git repo. Example:
+
+        jerry: Jerry Seinfeld <jerry@seinfeld.com>
+        george: George Costanza <george.costanza@seinfeld.com>
+
+    Example Usage:
+        git coauthor -h       # Print help
+        git coauthor -c       # Print configured coauthors
+        git coauthor -l       # Print coauthors for the previous commit
+        git coauthor -d       # Delete coauthors from the previous commit
+        git coauthor alias... # Add coauthors to the previous commit
+
+    Options:
+  EOF
+
+  opts.on('-c', '--config', 'Print configured coauthors.') do |s|
+    options[:config] = true
+  end
+
+  opts.on('-l', '--list', 'Print coauthors for the previous commit.') do |s|
+    options[:list] = true
+  end
+
+  opts.on('-d', '--delete', 'Delete coauthors from the previous commit.') do |s|
+    options[:delete] = true
+  end
+end
+
+parser.parse!
+
+message = `git log --format=%B -n1`.strip
+if !$?.success? || message.empty?
+  fail('fatal: cannot read the previous commit message')
+end
+
+config = {}
+
+user_file = File.join(Dir.home, '.git-coauthors')
+config.merge!(YAML.load(File.read(user_file))) if File.exist?(user_file)
+
+repo_file = File.join(Dir.pwd, '.git-coauthors')
+config.merge!(YAML.load(File.read(repo_file))) if File.exist?(repo_file)
+
+if options.size > 1
+  fail('fatal: unexpected arguments')
+elsif options.size == 1 && ARGV.any?
+  fail('fatal: unexpected arguments')
+elsif options.empty? && ARGV.empty?
+  fail('fatal: you must specify at least one coauthor')
+end
+
+if options[:config]
+  max_short = config.map { |short, _| short.size }.max
+  config.each do |short, long|
+    short += ':'
+    puts "#{short.ljust(max_short + 1)} #{long}"
+  end
+  exit
+end
+
+if options[:list]
+  puts message.scan(/^ *Co-authored-by:.*$/)
+  exit
+end
+
+message = message.split("\n").reject { _1.match(/^ *Co-authored-by:.*$/) }.join("\n").strip + "\n"
+
+if options[:delete]
+  `git commit --amend -m "#{message}"`
+  if !$?.success? || message.empty?
+    fail('fatal: cannot ammend the previous commit message')
+  end
+else
+  coauthors = ARGV.map do |arg|
+    fail("fatal: invalid coauthor: #{arg}") unless config[arg]
+
+    "Co-authored-by: #{config[arg]}"
+  end
+  message += "\n" + coauthors.join("\n")
+
+  `git commit --amend --only --no-verify --message "#{message}"`
+  if !$?.success? || message.empty?
+    fail('fatal: cannot ammend the previous commit message')
+  end
+
+  puts coauthors
+end
+
