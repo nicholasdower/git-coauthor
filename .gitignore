@@ -1,2 +1,5 @@
+/*.gem
 /.git-coauthors
-/.git-coauthors-template
+/.idea
+/.install
+/coverage
