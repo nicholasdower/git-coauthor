@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'fileutils'
 require 'optparse'
 require 'yaml'
 
@@ -29,25 +30,32 @@ parser = OptionParser.new do |opts|
         george: George Costanza <george.costanza@seinfeld.com>
 
     Example Usage:
-        git coauthor -h       # Print help
-        git coauthor -c       # Print configured coauthors
-        git coauthor -l       # Print coauthors for the previous commit
-        git coauthor -d       # Delete coauthors from the previous commit
-        git coauthor alias... # Add coauthors to the previous commit
+        git coauthor -h          # Print help
+
+        git coauthor             # Print coauthors for the previous commit
+
+        git coauthor alias...    # Add coauthors to the previous commit
+        git coauthor -d          # Delete coauthors from the previous commit
+
+        git coauthor -t alias... # Add coauthors to the commit template
+        git coauthor -t          # Print coauthors in the commit template
+        git coauthor -t -d       # Delete the commit template
+
+        git coauthor -c          # Print configured coauthors
 
     Options:
   EOF
 
-  opts.on('-c', '--config', 'Print configured coauthors.') do |s|
+  opts.on('-c', '--config', 'Print configured coauthors.') do
     options[:config] = true
   end
 
-  opts.on('-l', '--list', 'Print coauthors for the previous commit.') do |s|
-    options[:list] = true
+  opts.on('-d', '--delete', 'Delete coauthors from the previous commit.') do
+    options[:delete] = true
   end
 
-  opts.on('-d', '--delete', 'Delete coauthors from the previous commit.') do |s|
-    options[:delete] = true
+  opts.on('-t', '--template', 'Update or print the commit template rather than the previous commit.') do
+    options[:template] = true
   end
 end
 
@@ -66,15 +74,11 @@ config.merge!(YAML.load(File.read(user_file))) if File.exist?(user_file)
 repo_file = File.join(Dir.pwd, '.git-coauthors')
 config.merge!(YAML.load(File.read(repo_file))) if File.exist?(repo_file)
 
-if options.size > 1
-  fail('fatal: unexpected arguments')
-elsif options.size == 1 && ARGV.any?
-  fail('fatal: unexpected arguments')
-elsif options.empty? && ARGV.empty?
-  fail('fatal: you must specify at least one coauthor')
-end
-
 if options[:config]
+  if options.size > 1 || ARGV.any?
+    fail('fatal: unexpected arguments')
+  end
+
   max_short = config.map { |short, _| short.size }.max
   config.each do |short, long|
     short += ':'
@@ -83,7 +87,7 @@ if options[:config]
   exit
 end
 
-if options[:list]
+if ARGV.empty? && options.empty?
   puts message.scan(/^ *Co-authored-by:.*$/)
   exit
 end
@@ -91,23 +95,50 @@ end
 message = message.split("\n").reject { _1.match(/^ *Co-authored-by:.*$/) }.join("\n").strip + "\n"
 
 if options[:delete]
+  if options[:template]
+    fail('fatal: unexpected arguments') if options.size > 2 || ARGV.any?
+
+    `git config --local --unset commit.template`
+    fail('fatal: cannot set git commit template') unless $?.success? 
+
+    FileUtils.rm_rf('.git-coauthors-template')
+    exit
+  end
+
+  fail('fatal: unexpected arguments') if options.size > 1 || ARGV.any?
+
   `git commit --amend -m "#{message}"`
-  if !$?.success? || message.empty?
-    fail('fatal: cannot ammend the previous commit message')
-  end
-else
-  coauthors = ARGV.map do |arg|
-    fail("fatal: invalid coauthor: #{arg}") unless config[arg]
-
-    "Co-authored-by: #{config[arg]}"
-  end
-  message += "\n" + coauthors.join("\n")
-
-  `git commit --amend --only --no-verify --message "#{message}"`
-  if !$?.success? || message.empty?
-    fail('fatal: cannot ammend the previous commit message')
-  end
-
-  puts coauthors
+  fail('fatal: cannot ammend the previous commit message') unless $?.success?
+  exit
 end
 
+coauthors = ARGV.map do |arg|
+  fail("fatal: invalid coauthor: #{arg}") unless config[arg]
+
+  "Co-authored-by: #{config[arg]}"
+end
+
+if options[:template]
+  template_path = `git config --get commit.template`.strip
+  if ARGV.empty?
+    fail('fatal: git commit template not set') unless $?.success?
+    fail("fatal: git commit template set to #{template_path}") unless template_path == '.git-coauthors-template'
+    fail('fatal: git commit template does not exist') unless File.exist?('.git-coauthors-template')
+    template = File.read('.git-coauthors-template').strip
+    template = template.split("\n").select { _1.match(/^ *Co-authored-by:.*$/) }.join("\n")
+    puts template
+  else
+    fail("fatal: git commit template already set to #{template_path}") if $?.success? && template_path != '.git-coauthors-template'
+    File.write('.git-coauthors-template', "\n\n" + coauthors.join("\n") + "\n")
+    `git config --local commit.template .git-coauthors-template`
+    fail('fatal: cannot set git commit template') unless $?.success? 
+    puts coauthors
+  end
+  exit
+end
+
+message += "\n" + coauthors.join("\n")
+
+`git commit --amend --only --no-verify --message "#{message}"`
+fail('fatal: cannot ammend the previous commit message') unless $?.success?
+puts coauthors
