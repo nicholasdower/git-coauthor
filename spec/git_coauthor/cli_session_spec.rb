@@ -181,7 +181,7 @@ describe 'CLI' do
         allow(File).to receive(:read).with('moo').and_return("Foo\n\nBar\n")
       end
 
-      include_examples 'set template backup', "moo"
+      include_examples 'set template backup', 'moo'
       include_examples 'write template', "Foo\n\nBar\nCo-authored-by: Foo <foo@bar.com>\n"
       include_examples 'success', "Session:\n  Co-authored-by: Foo <foo@bar.com>\n"
     end
@@ -251,7 +251,7 @@ describe 'CLI' do
         allow(File).to receive(:read).with('moo').and_return("Foo\n\nBar\n")
       end
 
-      include_examples 'set template backup', "moo"
+      include_examples 'set template backup', 'moo'
       include_examples 'write template',
                        "Foo\n\nBar\nCo-authored-by: Bar <bar@bar.com>\nCo-authored-by: Foo <foo@bar.com>\n"
       include_examples 'success', "Session:\n  Co-authored-by: Bar <bar@bar.com>\n  Co-authored-by: Foo <foo@bar.com>\n"
@@ -295,9 +295,20 @@ describe 'CLI' do
       end
 
       include_examples 'write template',
-                       "\n\nCo-authored-by: Bar <bar@bar.com>\nCo-authored-by: Baz <baz@bar.com>\nCo-authored-by: Foo <foo@bar.com>\n"
+                       <<~TEMPLATE
+
+
+                         Co-authored-by: Bar <bar@bar.com>
+                         Co-authored-by: Baz <baz@bar.com>
+                         Co-authored-by: Foo <foo@bar.com>
+                       TEMPLATE
       include_examples 'success',
-                       "Session:\n  Co-authored-by: Bar <bar@bar.com>\n  Co-authored-by: Baz <baz@bar.com>\n  Co-authored-by: Foo <foo@bar.com>\n"
+                       <<~TEMPLATE
+                         Session:
+                           Co-authored-by: Bar <bar@bar.com>
+                           Co-authored-by: Baz <baz@bar.com>
+                           Co-authored-by: Foo <foo@bar.com>
+                       TEMPLATE
     end
   end
 

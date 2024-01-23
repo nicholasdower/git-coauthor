@@ -7,9 +7,7 @@ Usage: git coauthor <args>
 
 Installation:
 
-    gem install git-coauthor
-    git config --global alias.coauthor '!git-coauthor'
-    git config --global alias.ca '!git-coauthor'
+    gem install git-coauthor && git-coauthor --install
 
 Example Usage:
     git coauthor alias...                                   # Add one or more coauthors to the previous commit
@@ -32,6 +30,7 @@ Example Usage:
     git coauthor --session --delete alias...                # Delete one or more coauthors from the current session
 
 Options:
+    -i, --install                    Install git coauthor
     -d, --delete                     Delete coauthors
     -s, --session                    Updat, delete or print  session
     -c, --config                     Update, delete or print configuration

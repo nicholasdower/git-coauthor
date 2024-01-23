@@ -260,7 +260,6 @@ module GitCoauthor
       Kernel.exit(0)
     rescue OptionParser::ParseError => e
       fail("fatal: #{e}")
-      Kernel.exit(1)
     end
 
     private
