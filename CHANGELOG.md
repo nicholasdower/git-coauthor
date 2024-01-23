@@ -1,3 +1,7 @@
+## 3
+
+- Remove --install
+
 ## 2
 
 - Fix executable location.

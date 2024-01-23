@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    git-coauthor (2)
+    git-coauthor (3)
 
 GEM
   remote: http://rubygems.org/
