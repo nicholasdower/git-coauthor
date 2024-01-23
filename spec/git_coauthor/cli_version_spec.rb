@@ -17,7 +17,7 @@ describe 'CLI' do
   context 'git-coauthor --version' do
     it 'prints the version' do
       subject rescue nil
-      expect(stdout.string).to eq("git-coauthor version 1\n")
+      expect(stdout.string).to eq("git-coauthor version #{GitCoauthor::VERSION}\n")
     end
 
     it 'does not print an error message' do

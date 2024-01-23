@@ -20,7 +20,7 @@ module GitCoauthor
       @stdout = stdout
       @stderr = stderr
       @options = {
-        install: false, add: false, list: false, delete: false, session: false, config: false, global: false
+        add: false, list: false, delete: false, session: false, config: false, global: false
       }
       @parser = OptionParser.new do |opts|
         opts.banner = <<~DOC
@@ -29,8 +29,9 @@ module GitCoauthor
           Usage: git coauthor <args>
 
           Installation:
-
-              gem install git-coauthor && git-coauthor --install
+            gem install git-coauthor
+            git config --global alias.coauthor '!git-coauthor'
+            git config --global alias.ca '!git-coauthor'
 
           Example Usage:
               git coauthor alias...                                   # Add one or more coauthors to the previous commit
@@ -54,10 +55,6 @@ module GitCoauthor
 
           Options:
         DOC
-
-        opts.on('-i', '--install', 'Install git coauthor') do
-          @options[:install] = true
-        end
 
         opts.on('-d', '--delete', 'Delete coauthors') do
           @options[:delete] = true
@@ -91,10 +88,6 @@ module GitCoauthor
       parser.parse!(argv)
 
       case params
-      when %i[default install]
-        # git coauthor --install
-        success = Git.install
-        fail('fatal: could not install git-coauthor') unless success
       when %i[config add args]
         # git coauthor --config "foo: Foo <foo@bar.com>"
         argv.each do |arg|
@@ -260,6 +253,7 @@ module GitCoauthor
       Kernel.exit(0)
     rescue OptionParser::ParseError => e
       fail("fatal: #{e}")
+      Kernel.exit(1)
     end
 
     private
@@ -299,14 +293,12 @@ module GitCoauthor
     end
 
     def action
-      case [options[:delete], options[:install], argv.any?]
-      when [true, false, false], [true, false, true]
+      case [options[:delete], argv.any?]
+      when [true, false], [true, true]
         :delete
-      when [false, true, false]
-        :install
-      when [false, false, true]
+      when [false, true]
         :add
-      when [false, false, false]
+      when [false, false]
         :list
       else
         fail('fatal: unexpected arguments or options')

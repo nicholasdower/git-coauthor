@@ -4,11 +4,6 @@ require 'English'
 
 module GitCoauthor
   class Git
-    def self.install
-      `git config --global alias.coauthor '!git-coauthor' 2> /dev/null`
-      $CHILD_STATUS.success?
-    end
-
     def self.commit_message(sha)
       message = `git log --format="%B" --max-count=1 #{sha} 2> /dev/null`
       [$CHILD_STATUS.success?, message]
