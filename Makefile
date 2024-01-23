@@ -50,3 +50,7 @@ precommit: .install
 	@make rubocop
 	@echo Docs
 	@make docs
+
+.PHONY: release
+release: .install
+	@./script/release.rb

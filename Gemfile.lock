@@ -73,4 +73,4 @@ DEPENDENCIES
   simplecov-console (~> 0.0)
 
 BUNDLED WITH
-   2.5.4
+   2.4.12

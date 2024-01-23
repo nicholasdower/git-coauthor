@@ -124,12 +124,12 @@ module GitCoauthor
         print_config(user_file, {})
       when %i[config delete args]
         # git coauthor --config --delete foo
-        config = repo_config.except(*argv)
+        config = repo_config.reject { |k, _| argv.include?(k) }
         write_config(repo_file, config)
         print_config(CONFIG_FILE_NAME, config)
       when %i[config delete global args]
         # git coauthor --config --delete --global foo
-        config = user_config.except(*argv)
+        config = user_config.reject { |k, _| argv.include?(k) }
         write_config(user_file, config)
         print_config(user_file, config)
       when %i[default add args]
@@ -253,7 +253,6 @@ module GitCoauthor
       Kernel.exit(0)
     rescue OptionParser::ParseError => e
       fail("fatal: #{e}")
-      Kernel.exit(1)
     end
 
     private

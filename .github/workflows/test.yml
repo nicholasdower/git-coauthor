@@ -1,0 +1,43 @@
+name: Build, Lint & Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+    paths:
+      - '**'
+      - '!**/*.md'
+      - '!/.release-notes'
+      - '!/script/release.rb'
+      - '!/LICENSE.txt'
+      - '!/.github/dependabot.yml'
+      - '!/.github/workflows/release.yml'
+
+jobs:
+  build-lint-test-2-7-0:
+    name: Build, Lint, Test (2.7.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7.0'
+      - name: Lint
+        run: make rubocop
+      - name: RSpec
+        run: make rspec
+  build-lint-test-3-3-0:
+    name: Build, Lint, Test (3.3.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3.0'
+      - name: Lint
+        run: make rubocop
+      - name: RSpec
+        run: make rspec
