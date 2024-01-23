@@ -13,6 +13,7 @@ Gem::Specification.new do |spec|
   spec.email = 'nicholasdower@gmail.com'
   spec.files = Dir['lib/**/*.rb'] + Dir['bin/*']
   spec.bindir = 'bin'
+  spec.executables << 'git-coauthor'
   spec.metadata = {
     'bug_tracker_uri' => 'https://github.com/nicholasdower/git-coauthor/issues',
     'changelog_uri' => "https://github.com/nicholasdower/git-coauthor/releases/tag/v#{GitCoauthor::VERSION}",
