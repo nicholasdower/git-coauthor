@@ -86,18 +86,6 @@ puts 'Tagging'
 `git tag v#{version}`
 fail('count not tag commit') unless $CHILD_STATUS.success?
 
-puts 'Updating version'
-File.write(
-  'lib/git_coauthor/version.rb',
-  File.read('lib/git_coauthor/version.rb').sub(/VERSION = .*/, "VERSION = '#{next_version}'")
-)
-
-`bundle install`
-fail('failed to bundle install') unless $CHILD_STATUS.success?
-
-`git commit -a -m "Bump version to #{next_version}"`
-fail('count not update version') unless $CHILD_STATUS.success?
-
 puts 'Pushing changes'
 `git push origin master`
 fail('count not push changes') unless $CHILD_STATUS.success?
@@ -149,3 +137,37 @@ fail("request failed:\n#{response.body}") unless response.is_a?(Net::HTTPSuccess
 puts 'Pushing gem'
 success = system("export GEM_HOST_API_KEY=#{ENV.fetch('RUBYGEMS_API_KEY')}; gem push #{gem_file}")
 fail('count not push gem') unless success
+
+puts 'Creating Homebrew Formula'
+`VERSION=#{version} make homebrew-formula`
+fail('count not create homebrew formula') unless $CHILD_STATUS.success?
+
+`git commit -a -m "Add Homebrew formula for v#{version}"`
+fail('count not update version') unless $CHILD_STATUS.success?
+
+puts 'Updating version'
+File.write(
+  'lib/git_coauthor/version.rb',
+  File.read('lib/git_coauthor/version.rb').sub(/VERSION = .*/, "VERSION = '#{next_version}'")
+)
+
+`bundle install`
+fail('failed to bundle install') unless $CHILD_STATUS.success?
+
+`git commit -a -m "Bump version to #{next_version}"`
+fail('count not update version') unless $CHILD_STATUS.success?
+
+puts 'Pushing changes'
+`git push origin master`
+fail('count not push changes') unless $CHILD_STATUS.success?
+
+puts 'Triggering Homebrew formula update'
+uri = URI('https://api.github.com/repos/nicholasdower/homebrew-formulas/actions/workflows/update.yml/dispatches')
+body = { ref: 'master' }.to_json
+headers = {
+  'Accept' => 'application/vnd.github+json',
+  'Authorization' => "Bearer #{ENV.fetch('HOMEBREW_PAT')}",
+  'X-GitHub-Api-Version' => '2022-11-28'
+}
+response = Net::HTTP.post(uri, body, headers)
+fail("request failed:\n#{response.body}") unless response.is_a?(Net::HTTPSuccess)

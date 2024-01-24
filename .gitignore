@@ -3,3 +3,5 @@
 /.idea
 /.install
 /coverage
+/release.tar.gz
+/.DS_Store

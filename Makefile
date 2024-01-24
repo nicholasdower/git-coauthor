@@ -48,9 +48,15 @@ precommit: .install
 	@rspec --format progress
 	@echo Rubocop
 	@make rubocop
+	@echo Coverage
+	@COVERAGE=1 rspec --format progress
 	@echo Docs
 	@make docs
 
 .PHONY: release
 release: .install
 	@./script/release.rb
+
+.PHONY: homebrew-formula
+homebrew-formula:
+	@./script/homebrew-formula.rb

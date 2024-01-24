@@ -29,9 +29,12 @@ module GitCoauthor
           Usage: git coauthor <args>
 
           Installation:
-            gem install git-coauthor
-            git config --global alias.coauthor '!git-coauthor'
-            git config --global alias.ca '!git-coauthor'
+            brew tap nicholasdower/formulas
+            brew install git-coauthor
+
+          Uninstallation:
+            brew uninstall git-coauthor
+            brew untap nicholasdower/formulas
 
           Example Usage:
               git coauthor alias...                                   # Add one or more coauthors to the previous commit
