@@ -20,6 +20,7 @@ fail('invalid VERSION') unless ENV['VERSION'].match(VERSION_REGEX)
 fail('you must set NEXT_VERSION') unless ENV['NEXT_VERSION']
 fail('invalid NEXT_VERSION') unless ENV['NEXT_VERSION'].match(PRE_VERSION_REGEX)
 fail('you must set GITHUB_TOKEN') unless ENV['GITHUB_TOKEN']
+fail('you must set HOMEBREW_PAT') unless ENV['HOMEBREW_PAT']
 fail('you must set RUBYGEMS_API_KEY') unless ENV['RUBYGEMS_API_KEY']
 fail('not on master branch') unless `git branch --show-current`.strip == 'master'
 fail('master and origin/master differ') unless `git rev-parse origin/master`.strip == `git rev-parse master`.strip

@@ -22,5 +22,6 @@ jobs:
           VERSION: ${{ inputs.version }}
           NEXT_VERSION: ${{ inputs.next_version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_PAT: ${{ secrets.HOMEBREW_PAT }}
           RUBYGEMS_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
         run: make release
