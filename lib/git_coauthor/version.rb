@@ -2,5 +2,5 @@
 
 module GitCoauthor
   # The Git Coauthor version.
-  VERSION = '5'
+  VERSION = '6.pre'
 end
