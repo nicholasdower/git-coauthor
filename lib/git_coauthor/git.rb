@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'English'
+require 'open3'
 
 module GitCoauthor
   class Git
@@ -10,8 +11,11 @@ module GitCoauthor
     end
 
     def self.amend_commit_message(message)
-      `git commit --amend --only --no-verify --message "#{message}" 2> /dev/null`
-      $CHILD_STATUS.success?
+      Open3.popen2('git commit --amend --only --no-verify --file -') do |stdin, _, wait_thr|
+        stdin.puts(message)
+        stdin.close
+        wait_thr.value.success?
+      end
     end
 
     def self.config_get(key)

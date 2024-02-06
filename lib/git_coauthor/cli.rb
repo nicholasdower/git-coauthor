@@ -168,10 +168,7 @@ module GitCoauthor
                   else
                     msg_without_coauthors
                   end
-
-        success = Git.amend_commit_message(message)
-        fail('fatal: cannot amend the previous commit message') unless success
-
+        amend_commit_message(message)
         stdout.puts('Commit:')
         coauthors.each { stdout.puts("  #{_1}") }
       when %i[session add args]

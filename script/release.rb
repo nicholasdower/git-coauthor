@@ -71,14 +71,11 @@ fail('could not set user.email') unless $CHILD_STATUS.success?
 fail('could not set user.name') unless $CHILD_STATUS.success?
 
 puts 'Committing changes'
-stdin, stdout, stderr, thread = Open3.popen3('git', 'commit', '-a', '-F', '-')
-stdin.puts "v#{version} release\n\nFeatures & Bug Fixes\n#{notes}"
-stdin.close
-exit_status = thread.value
-stdout.close
-stderr.close
-
-fail('could not commit changes') unless exit_status.success?
+Open3.popen2('git commit --all --file -') do |stdin, _, wait_thr|
+  stdin.puts "v#{version} release\n\nFeatures & Bug Fixes\n#{notes}"
+  stdin.close
+  fail('could not commit changes') unless wait_thr.value.success?
+end
 
 target_commit = `git rev-parse HEAD`.strip
 fail('could not determine target commit') unless exit_status.success?
