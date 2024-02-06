@@ -1,1 +1,1 @@
-- Fix bug causing git commit to fail if message contains characters interpreted by the shell
+- No change
