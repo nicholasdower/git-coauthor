@@ -50,4 +50,40 @@ describe 'CLI' do
       expect { subject }.to raise_error(StandardError, 'error')
     end
   end
+
+  context 'git-coauthor --session --global' do
+    let(:argv) { %w[--session --global] }
+
+    it 'does not print a message to stdout' do
+      subject rescue nil
+      expect(stdout.string).to eq('')
+    end
+
+    it 'prints an error message' do
+      subject rescue nil
+      expect(stderr.string).to eq("fatal: unexpected arguments or options\n")
+    end
+
+    it 'exits with an error' do
+      expect { subject }.to raise_error(StandardError, 'error')
+    end
+  end
+
+  context 'git-coauthor --session --config' do
+    let(:argv) { %w[--session --config] }
+
+    it 'does not print a message to stdout' do
+      subject rescue nil
+      expect(stdout.string).to eq('')
+    end
+
+    it 'prints an error message' do
+      subject rescue nil
+      expect(stderr.string).to eq("fatal: unexpected arguments or options\n")
+    end
+
+    it 'exits with an error' do
+      expect { subject }.to raise_error(StandardError, 'error')
+    end
+  end
 end

@@ -15,7 +15,7 @@ on:
       - '!/.github/workflows/release.yml'
 
 jobs:
-  build-lint-test-2-7-0:
+  build-lint-test-coverage-2-7-0:
     name: Build, Lint, Test (2.7.0)
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -28,8 +28,8 @@ jobs:
         run: make rubocop
       - name: RSpec
         run: make rspec
-  build-lint-test-3-3-0:
-    name: Build, Lint, Test (3.3.0)
+  build-lint-test-coverage-3-3-0:
+    name: Build, Lint, Test, Coverage (3.3.0)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -41,3 +41,5 @@ jobs:
         run: make rubocop
       - name: RSpec
         run: make rspec
+      - name: Coverage
+        run: make coverage

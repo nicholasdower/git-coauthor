@@ -300,7 +300,9 @@ module GitCoauthor
       when [false, false]
         :list
       else
-        fail('fatal: unexpected arguments or options')
+        # :nocov:
+        raise 'unreachable'
+        # :nocov:
       end
     end
 
@@ -334,9 +336,9 @@ module GitCoauthor
     end
 
     def args_as_coauthors
-      return @args_as_coauthors if @args_as_coauthors
-
+      # :nocov:
       raise 'internal error: no args' if argv.empty?
+      # :nocov:
 
       @args_as_coauthors = argv.map do |arg|
         fail("fatal: invalid coauthor: #{arg}") unless config[arg]

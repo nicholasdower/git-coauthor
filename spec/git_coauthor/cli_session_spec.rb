@@ -186,6 +186,20 @@ describe 'CLI' do
       include_examples 'success', "Session:\n  Co-authored-by: Foo <foo@bar.com>\n"
     end
 
+    context 'when the existing commit template file is missing newlines' do
+      let(:user_config) { { 'foo' => 'Foo <foo@bar.com>' } }
+
+      before do
+        allow(GitCoauthor::Git).to receive(:config_get).with('commit.template').and_return([true, 'moo'])
+        allow(File).to receive(:exist?).with('moo').and_return(true)
+        allow(File).to receive(:read).with('moo').and_return('Foo')
+      end
+
+      include_examples 'set template backup', 'moo'
+      include_examples 'write template', "Foo\n\nCo-authored-by: Foo <foo@bar.com>\n"
+      include_examples 'success', "Session:\n  Co-authored-by: Foo <foo@bar.com>\n"
+    end
+
     context 'when there is not an existing coauthors commit template' do
       let(:user_config) { { 'foo' => 'Foo <foo@bar.com>' } }
 
@@ -195,6 +209,36 @@ describe 'CLI' do
 
       include_examples 'write template', "\n\nCo-authored-by: Foo <foo@bar.com>\n"
       include_examples 'success', "Session:\n  Co-authored-by: Foo <foo@bar.com>\n"
+      include_examples 'set template', '.git-coauthors-template'
+    end
+
+    context 'when setting the temlate config fails' do
+      let(:user_config) { { 'foo' => 'Foo <foo@bar.com>' } }
+
+      before do
+        allow(GitCoauthor::Git).to receive(:config_get).with('commit.template').and_return([false, nil])
+        allow(GitCoauthor::Git).to receive(:config_set).with('commit.template', '.git-coauthors-template')
+                                                       .and_return(false)
+      end
+
+      it 'prints an error message' do
+        subject rescue nil
+        expect(stderr.string).to eq("fatal: cannot set git commit template\n")
+      end
+
+      it 'does not print the session' do
+        subject rescue nil
+        expect(stdout.string).to eq('')
+      end
+
+      it 'does not remove the template' do
+        expect(FileUtils).not_to receive(:rm_f)
+        subject rescue nil
+      end
+
+      it 'exits with an error' do
+        expect { subject }.to raise_error(StandardError, 'error')
+      end
     end
 
     context 'when the coauthors commit template file does not exist' do
@@ -327,6 +371,14 @@ describe 'CLI' do
 
       include_examples 'remove template'
       include_examples 'success', "Session:\n"
+
+      context 'when unsetting the template fails' do
+        before do
+          allow(GitCoauthor::Git).to receive(:config_unset).with('commit.template').and_return(false)
+        end
+
+        include_examples 'error', "fatal: failed to unset git commit template\n"
+      end
     end
 
     context 'when the existing commit template file is not a coauthors template' do
@@ -361,6 +413,24 @@ describe 'CLI' do
       include_examples 'set template', 'moo'
       include_examples 'unset template backup'
       include_examples 'success', "Session:\n"
+
+      context 'when restoring the backup fails' do
+        before do
+          allow(File).to receive(:exist?).with('.git-coauthors-template').and_return(true)
+          allow(GitCoauthor::Git).to receive(:config_set).with('commit.template', 'moo').and_return(false)
+        end
+
+        include_examples 'error', "fatal: failed to set git commit template backup\n"
+      end
+
+      context 'when removing the backup fails' do
+        before do
+          allow(File).to receive(:exist?).with('.git-coauthors-template').and_return(true)
+          allow(GitCoauthor::Git).to receive(:config_unset).with('commit.template.backup').and_return(false)
+        end
+
+        include_examples 'error', "fatal: failed to unset git commit template backup\n"
+      end
     end
   end
 
@@ -395,6 +465,63 @@ describe 'CLI' do
       end
 
       include_examples 'success', "Session:\n"
+    end
+
+    context 'when coauthors commit template file exists' do
+      let(:user_config) { { 'foo' => 'Foo <foo@bar.com>' } }
+
+      before do
+        allow(GitCoauthor::Git).to receive(:config_get).with('commit.template').and_return(
+          [true, '.git-coauthors-template']
+        )
+        allow(File).to receive(:exist?).with('.git-coauthors-template').and_return(true)
+        allow(File).to receive(:read).with('.git-coauthors-template').and_return(
+          <<~TEMPLATE
+            Co-authored-by: Bar <bar@bar.com>
+            Co-authored-by: Baz <baz@bar.com>
+            Co-authored-by: Foo <foo@bar.com>
+          TEMPLATE
+        )
+      end
+
+      include_examples 'write template',
+                       <<~TEMPLATE
+
+
+                         Co-authored-by: Bar <bar@bar.com>
+                         Co-authored-by: Baz <baz@bar.com>
+                       TEMPLATE
+      include_examples 'success',
+                       <<~TEMPLATE
+                         Session:
+                           Co-authored-by: Bar <bar@bar.com>
+                           Co-authored-by: Baz <baz@bar.com>
+                       TEMPLATE
+    end
+
+    context 'when all coauthors deleted and there is not a backup' do
+      let(:user_config) { { 'foo' => 'Foo <foo@bar.com>' } }
+
+      before do
+        allow(GitCoauthor::Git).to receive(:config_get).with('commit.template').and_return(
+          [true, '.git-coauthors-template']
+        )
+        allow(File).to receive(:exist?).with('.git-coauthors-template').and_return(true)
+        allow(File).to receive(:read).with('.git-coauthors-template').and_return(
+          <<~TEMPLATE
+            Co-authored-by: Foo <foo@bar.com>
+          TEMPLATE
+        )
+        allow(GitCoauthor::Git).to receive(:config_get).with('commit.template.backup').and_return([false, nil])
+        allow(GitCoauthor::Git).to receive(:config_unset).with('commit.template').and_return(true)
+      end
+
+      include_examples 'remove template'
+      include_examples 'success',
+                       <<~TEMPLATE
+                         Session:
+                       TEMPLATE
+      include_examples 'unset template'
     end
   end
 end
