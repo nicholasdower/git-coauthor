@@ -78,7 +78,7 @@ Open3.popen2('git commit --all --file -') do |stdin, _, wait_thr|
 end
 
 target_commit = `git rev-parse HEAD`.strip
-fail('could not determine target commit') unless exit_status.success?
+fail('could not determine target commit') unless $CHILD_STATUS.success?
 
 puts 'Tagging'
 `git tag v#{version}`
