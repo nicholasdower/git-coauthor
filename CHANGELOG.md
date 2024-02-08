@@ -1,3 +1,7 @@
+## 7
+
+- Added instructions for adding the git alias
+
 ## 6
 
 - Fix bug causing git commit to fail if message contains characters interpreted by the shell
