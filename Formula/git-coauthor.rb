@@ -1,8 +1,8 @@
 class GitCoauthor < Formula
   desc "CLI used to manage Git coauthors"
   homepage "https://github.com/nicholasdower/git-coauthor"
-  url "https://github.com/nicholasdower/git-coauthor/archive/v6.tar.gz"
-  sha256 "00a634d0f3a4095df40131b0e13446f71ef59f25668aa257b3e7271e182f35a7"
+  url "https://github.com/nicholasdower/git-coauthor/archive/v7.tar.gz"
+  sha256 "ca06c5ced654e79fb4d6111a8e3e46dc3470ad432a5e0e2ee71b58336b7308d9"
   license "MIT"
 
   def install
@@ -12,7 +12,7 @@ class GitCoauthor < Formula
   end
 
   test do
-    assert_match "git-coauthor version 6", shell_output("#{bin}/git-coauthor --version")
+    assert_match "git-coauthor version 7", shell_output("#{bin}/git-coauthor --version")
   end
 
   def caveats
