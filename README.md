@@ -8,6 +8,7 @@ Usage: git coauthor <args>
 Installation:
   brew tap nicholasdower/formulas
   brew install git-coauthor
+  git config --global alias.coauthor '!git-coauthor'
 
 Uninstallation:
   brew uninstall git-coauthor
@@ -35,7 +36,7 @@ Example Usage:
 
 Options:
     -d, --delete                     Delete coauthors
-    -s, --session                    Updat, delete or print  session
+    -s, --session                    Update, delete or print  session
     -c, --config                     Update, delete or print configuration
     -g, --global                     Update or print the global coauthor configuration
     -v, --version                    Print version

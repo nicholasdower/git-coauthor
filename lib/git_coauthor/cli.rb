@@ -31,6 +31,7 @@ module GitCoauthor
           Installation:
             brew tap nicholasdower/formulas
             brew install git-coauthor
+            git config --global alias.coauthor '!git-coauthor'
 
           Uninstallation:
             brew uninstall git-coauthor
@@ -63,7 +64,7 @@ module GitCoauthor
           @options[:delete] = true
         end
 
-        opts.on('-s', '--session', 'Updat, delete or print  session') do
+        opts.on('-s', '--session', 'Update, delete or print  session') do
           @options[:session] = true
         end
 
