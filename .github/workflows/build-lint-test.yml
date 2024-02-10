@@ -9,6 +9,7 @@ on:
       - '**'
       - '!**/*.md'
       - '!/.release-notes'
+      - '!/Formula/git-coauthor.rb'
       - '!/man/git-coauthor.1'
       - '!/script/changelog.sh'
       - '!/script/homebrew.sh'
