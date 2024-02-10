@@ -1,7 +1,2 @@
-/*.gem
-/.git-coauthors
-/.idea
-/.install
-/coverage
-/release.tar.gz
-/.DS_Store
+/target
+/bin

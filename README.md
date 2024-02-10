@@ -1,44 +1,50 @@
 # git-coauthor
 
+List or add Git coauthors
+
+## Installation
+
+```shell
+brew tap nicholasdower/formulas
+brew install git-coauthor
+git config --global alias.coauthor '!git-coauthor'
 ```
-Manages Git coauthors.
 
-Usage: git coauthor <args>
+## Help
 
-Installation:
-  brew tap nicholasdower/formulas
-  brew install git-coauthor
-  git config --global alias.coauthor '!git-coauthor'
+```
+usage: git coauthor [<alias>...]
 
-Uninstallation:
-  brew uninstall git-coauthor
-  brew untap nicholasdower/formulas
+List or add Git coauthors
 
-Example Usage:
-    git coauthor alias...                                   # Add one or more coauthors to the previous commit
-    git coauthor                                            # List the coauthors on the previous commit
-    git coauthor --delete                                   # Delete all coauthors from the previous commit
-    git coauthor --delete alias...                          # Delete one or more coauthors from the previous commit
+Configuration
+    Git coauthor is configured by creating a file like:
 
-    git coauthor --config "alias: Name <email>"...          # Add a coauthor to the local config
-    git coauthor --config --global "alias: Name <email>"... # Add a coauthor to the global config
-    git coauthor --config                                   # List the local config
-    git coauthor --config --global                          # List the global config
-    git coauthor --config --delete                          # Delete the local config
-    git coauthor --config --delete --global                 # Delete the global config
-    git coauthor --config --delete alias...                 # Delete one or more coauthors from the local config
-    git coauthor --config --delete --global alias...        # Delete one or more coauthors from the global config
+        <alias>: <name> <email>
+        <alias>: <name> <email>
 
-    git coauthor --session alias...                         # Add one or more coauthors to the current session
-    git coauthor --session                                  # List the coauthors in the current session
-    git coauthor --session --delete                         # Delete the current session
-    git coauthor --session --delete alias...                # Delete one or more coauthors from the current session
+    The file can be placed in either or both of the following locations:
 
-Options:
-    -d, --delete                     Delete coauthors
-    -s, --session                    Update, delete or print  session
-    -c, --config                     Update, delete or print configuration
-    -g, --global                     Update or print the global coauthor configuration
-    -v, --version                    Print version
-    -h                               Print help
+        <home>/.gitcoauthors
+        <repo>/.git/coauthors
+
+    If both files exist and contain the same alias, the alias in the repository file overrides the alias in the user file.
+
+Examples
+    Given a configuration file like:
+
+        foo: Foo Foo <foo@foo.foo>
+        bar: Bar Bar <bar@bar.bar>
+
+    List coauthors on the HEAD commit:
+
+        git coauthor
+
+    Add a coauthor to the HEAD commit:
+
+        git coauthor foo
+
+    Add multiple coauthors to the HEAD commit:
+
+        git coauthor foo bar
 ```

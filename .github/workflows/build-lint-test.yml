@@ -1,0 +1,32 @@
+name: Build, Lint & Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+    paths:
+      - '**'
+      - '!**/*.md'
+      - '!/.release-notes'
+      - '!/script/release.rb'
+      - '!/LICENSE.txt'
+      - '!/.github/dependabot.yml'
+      - '!/.github/workflows/release.yml'
+
+jobs:
+  build-lint-test:
+    name: Build, Lint & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Build
+        run: cargo build --release --all-features
+      - name: Lint
+        run: cargo clippy -- -Dwarnings
+      - name: Test
+        run: ./script/test.sh
