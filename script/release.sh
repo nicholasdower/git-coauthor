@@ -32,17 +32,17 @@ tar -czf "$file" ./man/ ./bin/
 
 git add .
 
-echo -e "v1.0.0 Release\n\n$(cat .release-notes)" | git commit -a -F -
+echo -e "v$version Release\n\n$(cat .release-notes)" | git commit -a -F -
 
-tag="v$version"
-git tag "$tag"
+git tag "v$version"
 
+cp .release-notes tmp/
 echo "- No changes" > .release-notes
 git add .release-notes
 git commit -a -m 'Post release'
 
 git push origin master
-git push origin "$tag"
+git push origin "v$version"
 
-gh release create "$tag" "$file" -R nicholasdower/git-coauthor --notes-file .release-notes
+gh release create "v$version" "$file" -R nicholasdower/git-coauthor --notes-file tmp/.release-notes
 gh workflow run update.yml --ref master -R nicholasdower/homebrew-formulas
