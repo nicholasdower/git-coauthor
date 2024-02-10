@@ -1,4 +1,21 @@
-.TH GIT\-COAUTHOR 1 2024-02-10 1.0.0 Git\ Manual
+#!/usr/bin/env bash
+
+set -e
+set -u
+set -o pipefail
+
+if [ $# -ne 1 ]; then
+  echo 'error: version required' >&2
+  exit 1
+fi
+
+version=$1
+date=$(date '+%Y-%m-%d')
+
+rm -rf man
+mkdir man
+cat << EOF > man/git-coauthor.1
+.TH GIT\-COAUTHOR 1 $date $version Git\ Manual
 .SH NAME
 \fBgit\-coauthor\fR \- List or add Git coauthors
 .SH SYNOPSIS
@@ -77,3 +94,4 @@ brew untap nicholasdower/formulas
 brew uninstall git-coauthor
 .fi
 .RE
+EOF

@@ -9,10 +9,13 @@ on:
       - '**'
       - '!**/*.md'
       - '!/.release-notes'
-      - '!/script/release.rb'
+      - '!/man/git-coauthor.1'
+      - '!/script/changelog.sh'
+      - '!/script/homebrew.sh'
+      - '!/script/manpage.sh'
+      - '!/script/release.sh'
       - '!/LICENSE.txt'
       - '!/.github/dependabot.yml'
-      - '!/.github/workflows/release.yml'
 
 jobs:
   build-lint-test:

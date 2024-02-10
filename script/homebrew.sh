@@ -1,8 +1,23 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+set -o pipefail
+
+if [ $# -ne 1 ]; then
+  echo 'error: version required' >&2
+  exit 1
+fi
+
+version=$1
+url="https://github.com/nicholasdower/git-coauthor/releases/download/v$version/release.tar.gz"
+sha=`shasum -a 256 "release.tar.gz" | cut -d' ' -f1`
+cat << EOF > Formula/git-coauthor.rb
 class GitCoauthor < Formula
   desc "List or add Git coauthors"
   homepage "https://github.com/nicholasdower/git-coauthor"
-  url "https://github.com/nicholasdower/git-coauthor/releases/download/v1.0.0/release.tar.gz"
-  sha256 "8ab4717e697d796fc1ff93dc9a3679e21d345e2d0cd7b1c041f68e8ade068784"
+  url "$url"
+  sha256 "$sha"
   license "MIT"
 
   def install
@@ -22,3 +37,4 @@ class GitCoauthor < Formula
     EOS
   end
 end
+EOF

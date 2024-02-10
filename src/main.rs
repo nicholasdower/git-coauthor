@@ -5,7 +5,7 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::{os::unix::process::ExitStatusExt, process::Command};
 
-const VERSION: &str = "1.0.0";
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const SHORT_HELP: &str = "\
 usage: git coauthor [<alias>...]
@@ -13,6 +13,7 @@ usage: git coauthor [<alias>...]
 List or add Git coauthors
 
 Configuration
+
     Git coauthor is configured by creating a file like:
 
         <alias>: <name> <email>
@@ -26,6 +27,7 @@ Configuration
     If both files exist and contain the same alias, the alias in the repository file overrides the alias in the user file.
 
 Examples
+
     Given a configuration file like:
 
         foo: Foo Foo <foo@foo.foo>
@@ -42,6 +44,16 @@ Examples
     Add multiple coauthors to the HEAD commit:
     
         git coauthor foo bar
+
+Install
+
+    brew tap nicholasdower/formulas
+    brew install git-coauthor
+
+Uninstall
+
+    brew uninstall git-coauthor
+    brew untap nicholasdower/formulas
 ";
 
 #[derive(Parser)]
