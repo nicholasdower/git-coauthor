@@ -17,12 +17,15 @@ mkdir man
 cat << EOF > man/git-coauthor.1
 .TH GIT\-COAUTHOR 1 $date $version Git\ Manual
 .SH NAME
-\fBgit\-coauthor\fR \- List or add Git coauthors
+\fBgit\-coauthor\fR \- List, add or delete Git coauthors
 .SH SYNOPSIS
-\fBgit coauthor\fR [\fIalias \.\.\.\fR]
+\fBgit coauthor\fR [-d] [\fIalias \.\.\.\fR]
 .SH DESCRIPTION
-List coauthors on the HEAD commit or add coauthors to the HEAD commit.
+Manage coauthors on the HEAD commit using configured aliases.
 .SH OPTIONS
+.TP
+\fB\-d, \-\-delete\fR
+Delete coauthors\.
 .TP
 \fB\-h, \-\-help\fR
 Print help\.
@@ -43,9 +46,9 @@ Place the file in any of the following locations:
 .PP
 .RS 4
 .nf
-<home>/.gitcoauthors
-<repo>/.gitcoauthors
-<repo>/.git/coauthors
+\$HOME/.gitcoauthors
+\$REPO/.gitcoauthors
+\$REPO/.git/coauthors
 .fi
 .RE
 .SH EXAMPLES
@@ -55,16 +58,22 @@ List coauthors on the HEAD commit:
 git coauthor
 .RE
 .PP
-Add a coauthor to the HEAD commit:
-.PP
-.RS 4
-git coauthor foo
-.RE
-.PP
-Add multiple coauthors to the HEAD commit:
+Add coauthors to the HEAD commit:
 .PP
 .RS 4
 git coauthor foo bar
+.RE
+.PP
+Delete coauthors from the HEAD commit:
+.PP
+.RS 4
+git coauthor -d foo bar
+.RE
+.PP
+Delete all coauthors from the HEAD commit:
+.PP
+.RS 4
+git coauthor -d
 .RE
 .SH INSTALLATION
 Install:

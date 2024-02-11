@@ -1,9 +1,15 @@
 # git-coauthor
 
 ```
-usage: git coauthor [<alias>...]
+usage: git coauthor [-d] [<alias>...]
 
-List or add Git coauthors
+List, add or delete Git coauthors
+
+Options
+
+    -d, --delete    Delete coauthors
+    -h, --help      Show this message
+    -v, --version   Show version information
 
 Configuration
 
@@ -31,6 +37,18 @@ Examples
     Add multiple coauthors to the HEAD commit:
 
         git coauthor foo bar
+
+    Delete a coauthor from the HEAD commit:
+
+        git coauthor --delete foo
+
+    Delete multiple coauthors from the HEAD commit:
+
+        git coauthor --delete foo bar
+
+    Delete all coauthors from the HEAD commit:
+
+        git coauthor --delete
 
 Installation
 

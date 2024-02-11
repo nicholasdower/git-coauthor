@@ -3,14 +3,20 @@ use git2::{Commit, ObjectType, Repository};
 use std::collections::HashMap;
 use std::fs::File;
 use std::path::{Path, PathBuf};
-use std::{process::Command};
+use std::process::Command;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const SHORT_HELP: &str = "\
-usage: git coauthor [<alias>...]
+usage: git coauthor [-d] [<alias>...]
 
-List or add Git coauthors
+List, add or delete Git coauthors
+
+Options
+
+    -d, --delete    Delete coauthors.
+    -h, --help      Print help.
+    -v, --version   Print version.
 
 Configuration
 
@@ -31,13 +37,17 @@ Examples
 
         git coauthor
 
-    Add a coauthor to the HEAD commit:
-
-        git coauthor foo
-
-    Add multiple coauthors to the HEAD commit:
+    Add coauthors to the HEAD commit:
 
         git coauthor foo bar
+
+    Delete coauthors from the HEAD commit:
+
+        git coauthor -d foo bar
+
+    Delete all coauthors from the HEAD commit:
+
+        git coauthor -d
 
 Installation
 
@@ -63,6 +73,9 @@ struct Cli {
 
     #[arg(short, long)]
     version: bool,
+
+    #[arg(short, long)]
+    delete: bool,
 }
 
 fn main() {
@@ -89,13 +102,20 @@ fn run() -> Result<Option<String>, String> {
         return Ok(None); // todo
     } else if args.version {
         Ok(Some(format!("git-coauthor {}", VERSION)))
+    } else if args.delete {
+        let coauthors = delete_from_commit(args.aliases)?;
+        if coauthors.is_empty() {
+            Ok(Some("no coauthors".to_string()))
+        } else {
+            Ok(Some(coauthors.join("\n")))
+        }
     } else if !args.aliases.is_empty() {
         let coauthors = add_to_commit(args.aliases)?.join("\n");
         Ok(Some(coauthors))
     } else {
         let coauthors = read_from_commit()?;
         if coauthors.is_empty() {
-            Ok(Some("no coauthors found".to_string()))
+            Ok(Some("no coauthors".to_string()))
         } else {
             Ok(Some(coauthors.join("\n")))
         }
@@ -174,9 +194,10 @@ fn add_to_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
         return Err("coauthor not found".to_string());
     }
     let coauthors: Vec<String> = aliases.iter().map(|alias| {
-        let coauthor = config.get(alias);
-        format!("Co-authored-by: {}", coauthor.unwrap())
+        let coauthor = config.get(alias).unwrap();
+        format!("Co-authored-by: {}", coauthor)
     }).collect();
+
     let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
     let head = repo.head().map_err(|_| "failed to find head".to_string())?;
     let commit = head.peel_to_commit().map_err(|_| "failed to find commit".to_string())?;
@@ -212,5 +233,60 @@ fn add_to_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
         Some(new_message.as_str()),
         Some(&tree),
     ).map_err(|_| "failed to amend commit".to_string())?;
+
     Ok(existing)
+}
+
+fn delete_from_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
+    let config = get_config()?;
+    let contains_all_keys = aliases.iter().all(|key| config.contains_key(key));
+    if !contains_all_keys {
+        return Err("coauthor not found".to_string());
+    }
+    let coauthors: Vec<String> = aliases.iter().map(|alias| {
+        let coauthor = config.get(alias).unwrap();
+        format!("Co-authored-by: {}", coauthor)
+    }).collect();
+
+    let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
+    let head = repo.head().map_err(|_| "failed to find head".to_string())?;
+    let commit = head.peel_to_commit().map_err(|_| "failed to find commit".to_string())?;
+    let tree = commit.tree().map_err(|_| "failed to find tree".to_string())?;
+
+    if commit.message().is_none() {
+        return Err("failed to read commit message".to_string());
+    }
+    let message = commit.message().unwrap();
+    let mut lines: Vec<String> = message.lines().map(|line| line.to_string()).collect();
+    lines = lines
+        .iter()
+        .filter(|&line| {
+            if aliases.is_empty() {
+                !line.starts_with("Co-authored-by:")
+            } else {
+                !coauthors.contains(line)
+            }
+        })
+        .map(|line| line.to_string())
+        .collect();
+    let new_coauthors: Vec<String> = lines
+        .iter()
+        .filter(|&line| line.starts_with("Co-authored-by:"))
+        .map(|coauthor| coauthor.to_string())
+        .collect();
+    if lines.len() == 1 {
+        lines.push("".to_string());
+    }
+    let new_message = format!("{}\n", lines.join("\n"));
+
+    commit.amend(
+        Some("HEAD"),
+        None,
+        None,
+        None,
+        Some(new_message.as_str()),
+        Some(&tree),
+    ).map_err(|_| "failed to amend commit".to_string())?;
+
+    Ok(new_coauthors)
 }

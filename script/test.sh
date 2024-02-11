@@ -52,7 +52,7 @@ echo "foo: Foo <foo@foo.com>" > .git/coauthors
 echo "bar: Bar <bar@bar.com>" >> .git/coauthors
 
 actual=$(./git-coauthor 2>&1)
-expected=$(echo "no coauthors found")
+expected=$(echo "no coauthors")
 test "list no coauthors" "$actual" "$expected"
 
 actual=$(./git-coauthor baz 2>&1)
@@ -70,6 +70,10 @@ test "list one coauthor" "$actual" "$expected"
 actual=$(./git-coauthor bar 2>&1)
 expected=$(printf "Co-authored-by: Foo <foo@foo.com>\nCo-authored-by: Bar <bar@bar.com>\n")
 test "add another coauthor" "$actual" "$expected"
+
+actual=$(./git-coauthor -d foo 2>&1)
+expected=$(echo "Co-authored-by: Bar <bar@bar.com>")
+test "remove one coauthor" "$actual" "$expected"
 
 git commit --amend -m 'foo' --quiet
 
@@ -89,10 +93,18 @@ actual=$(./git-coauthor 2>&1)
 expected=$(printf "Co-authored-by: Foo <foo@foo.com>\nCo-authored-by: Bar <bar@bar.com>\n")
 test "list multiple coauthors again" "$actual" "$expected"
 
+actual=$(./git-coauthor -d foo bar 2>&1)
+expected=$(echo "no coauthors")
+test "delete multiple coauthors" "$actual" "$expected"
+
 git commit --amend -m 'foo' --quiet
 
 echo "foo: Other Foo <foo@foo.com>" > .gitcoauthors
 
-actual=$(./git-coauthor foo 2>&1)
-expected=$(echo "Co-authored-by: Other Foo <foo@foo.com>")
+actual=$(./git-coauthor foo bar 2>&1)
+expected=$(printf "Co-authored-by: Other Foo <foo@foo.com>\nCo-authored-by: Bar <bar@bar.com>\n")
 test "override coauthor" "$actual" "$expected"
+
+actual=$(./git-coauthor -d 2>&1)
+expected=$(echo "no coauthors")
+test "delete all coauthors" "$actual" "$expected"
