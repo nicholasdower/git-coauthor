@@ -5,30 +5,32 @@ set -u
 set -o pipefail
 
 if [ $# -ne 1 ]; then
-  echo 'error: version required' >&2
+  echo "usage: $0 <version>" >&2
   exit 1
 fi
 
-version=$1
+version="$1"
 
 sed -i '' "s/^version = .*/version = \"$version\"/g" Cargo.toml
 
 rm -rf target
 cargo build --release --all-features
+
 RUNNER_TEMP=/tmp ./script/test.sh
 
 rm -rf bin
 mkdir -p bin
 cp ./target/release/git-coauthor bin/
 
-./script/manpage.sh "$version"
+./script/manpage.sh "$version" "$(date '+%Y-%m-%d')"
 
 file="release.tar.gz"
 rm -f "$file"
 tar -czf "$file" ./man/ ./bin/
 
-./script/homebrew.sh "$version"
+./script/homebrew.sh "$version" "$file"
 ./script/changelog.sh "$version"
+./script/readme.sh
 
 git add .
 
@@ -45,4 +47,4 @@ git push origin master
 git push origin "v$version"
 
 gh release create "v$version" "$file" -R nicholasdower/git-coauthor --notes-file tmp/.release-notes
-gh workflow run update.yml --ref master -R nicholasdower/homebrew-formulas
+gh workflow run update.yml --ref master -R nicholasdower/homebrew-tap

@@ -4,13 +4,13 @@ set -e
 set -u
 set -o pipefail
 
-if [ $# -ne 1 ]; then
-  echo 'error: version required' >&2
+if [ $# -ne 2 ]; then
+  echo "usage: $0 <version> <date>" >&2
   exit 1
 fi
 
-version=$1
-date=$(date '+%Y-%m-%d')
+version="$1"
+date="$2"
 
 rm -rf man
 mkdir man
@@ -21,7 +21,7 @@ cat << EOF > man/git-coauthor.1
 .SH SYNOPSIS
 \fBgit coauthor\fR [\fIalias \.\.\.\fR]
 .SH DESCRIPTION
-List coauthors on the HEAD commit or add coauthors to the HEAD commit via configured aliases.
+List coauthors on the HEAD commit or add coauthors to the HEAD commit.
 .SH OPTIONS
 .TP
 \fB\-h, \-\-help\fR
@@ -30,35 +30,25 @@ Print help\.
 \fB\-v\, \-\-version\fR
 Print the version\.
 .SH CONFIGURATION
-Git coauthor is configured by creating a file like:
+Create a file like:
 .PP
 .RS 4
 .nf
-<alias>: <name> <email>
-<alias>: <name> <email>
+foo: Foo <foo@baz.com>
+bar: Bar <bar@baz.com>
 .fi
 .RE
 .PP
-The file can be placed in either or both of the following locations:
+Place the file in any of the following locations:
 .PP
 .RS 4
 .nf
 <home>/.gitcoauthors
+<repo>/.gitcoauthors
 <repo>/.git/coauthors
 .fi
 .RE
-.PP
-If both files exist and contain the same alias, the alias in the repository file overrides the alias in the user file.
 .SH EXAMPLES
-Given a configuration file like:
-.PP
-.RS 4
-.nf
-foo: Foo Foo <foo@foo.foo>
-bar: Bar Bar <bar@bar.bar>
-.fi
-.RE
-.PP
 List coauthors on the HEAD commit:
 .PP
 .RS 4
@@ -76,22 +66,16 @@ Add multiple coauthors to the HEAD commit:
 .RS 4
 git coauthor foo bar
 .RE
-.SH INSTALL
-To install, run:
+.SH INSTALLATION
+Install:
 .PP
 .RS 4
-.nf
-brew tap nicholasdower/formulas
-brew install git-coauthor
-.fi
+brew install nicholasdower/tap/git-coauthor
 .RE
-.SH UNINSTALL
-To uninstall, run:
+.PP
+Uninstall:
 .PP
 .RS 4
-.nf
-brew untap nicholasdower/formulas
 brew uninstall git-coauthor
-.fi
 .RE
 EOF

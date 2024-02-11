@@ -4,14 +4,16 @@ set -e
 set -u
 set -o pipefail
 
-if [ $# -ne 1 ]; then
-  echo 'error: version required' >&2
+if [ $# -ne 2 ]; then
+  echo "usage: $0 <version> <file>" >&2
   exit 1
 fi
 
-version=$1
-url="https://github.com/nicholasdower/git-coauthor/releases/download/v$version/release.tar.gz"
-sha=`shasum -a 256 "release.tar.gz" | cut -d' ' -f1`
+version="$1"
+file="$2"
+
+url="https://github.com/nicholasdower/git-coauthor/releases/download/v$version/$file"
+sha=`shasum -a 256 "$file" | cut -d' ' -f1`
 cat << EOF > Formula/git-coauthor.rb
 class GitCoauthor < Formula
   desc "List or add Git coauthors"

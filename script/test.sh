@@ -55,6 +55,10 @@ actual=$(./git-coauthor 2>&1)
 expected=$(echo "no coauthors found")
 test "list no coauthors" "$actual" "$expected"
 
+actual=$(./git-coauthor baz 2>&1)
+expected=$(echo "error: coauthor not found")
+test "bad coauthor" "$actual" "$expected"
+
 actual=$(./git-coauthor foo 2>&1)
 expected=$(echo "Co-authored-by: Foo <foo@foo.com>")
 test "add one coauthor" "$actual" "$expected"
@@ -84,3 +88,11 @@ test "add same coauthor" "$actual" "$expected"
 actual=$(./git-coauthor 2>&1)
 expected=$(printf "Co-authored-by: Foo <foo@foo.com>\nCo-authored-by: Bar <bar@bar.com>\n")
 test "list multiple coauthors again" "$actual" "$expected"
+
+git commit --amend -m 'foo' --quiet
+
+echo "foo: Other Foo <foo@foo.com>" > .gitcoauthors
+
+actual=$(./git-coauthor foo 2>&1)
+expected=$(echo "Co-authored-by: Other Foo <foo@foo.com>")
+test "override coauthor" "$actual" "$expected"
