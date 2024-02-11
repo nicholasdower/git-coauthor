@@ -1,5 +1,5 @@
 use clap::Parser;
-use git2::{Commit, ObjectType, Repository};
+use git2::Repository;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -78,12 +78,13 @@ struct Cli {
 }
 
 fn main() {
-    let output = run().unwrap_or_else(|e| {
-        eprintln!("error: {}", e);
-        std::process::exit(1);
-    });
-    if output.is_some() {
-        println!("{}", output.unwrap());
+    match run() {
+        Ok(Some(output)) => println!("{}", output),
+        Ok(None) => (),
+        Err(e) => {
+            eprintln!("error: {}", e);
+            std::process::exit(1);
+        },
     }
     std::process::exit(0);
 }
@@ -131,13 +132,13 @@ fn get_config_for(path: &Path) -> Result<HashMap<String, String>, String> {
 
 fn get_user_config() -> Result<HashMap<String, String>, String> {
     let home_dir: Option<PathBuf> = home::home_dir();
-    if home_dir.is_some() {
-        let mut user_path_buf = home_dir.unwrap();
-        user_path_buf.push(Path::new(".gitcoauthors"));
-        return get_config_for(user_path_buf.as_path());
-    } else {
-        Ok(HashMap::new())
-    }
+    return match home_dir {
+        Some(mut path_buf) => {
+            path_buf.push(".gitcoauthors");
+            get_config_for(path_buf.as_path())
+        },
+        None => Ok(HashMap::new()),
+    };
 }
 
 fn get_repo_config() -> Result<HashMap<String, String>, String> {
@@ -163,48 +164,46 @@ fn get_config() -> Result<HashMap<String, String>, String> {
     Ok(config)
 }
 
-fn get_commit(repo: &Repository) -> Result<Commit, git2::Error> {
-    let obj = repo.head()?.resolve()?.peel(ObjectType::Commit)?;
-    obj.into_commit()
-        .map_err(|_| git2::Error::from_str("error: couldn't find commit"))
-}
-
 fn read_from_commit() -> Result<Vec<String>, String> {
     let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
-    let commit = get_commit(&repo).map_err(|_| "failed to get commit".to_string())?;
-    if commit.message().is_none() {
-        return Err("failed to read commit message".to_string());
-    }
-    let message = commit.message().unwrap();
-    let coauthors: Vec<String> = message
-        .lines()
-        .filter(|line| line.starts_with("Co-authored-by:"))
-        .map(|line| line.to_string())
-        .collect();
-    Ok(coauthors)
+    let head = repo.head().map_err(|_| "failed to find head".to_string())?;
+    let commit = head.peel_to_commit().map_err(|_| "failed to find commit".to_string())?;
+    return match commit.message() {
+        Some(message) => {
+            let coauthors: Vec<String> = message
+                .lines()
+                .filter(|line| line.starts_with("Co-authored-by:"))
+                .map(|line| line.to_string())
+                .collect();
+            Ok(coauthors)
+        },
+        None => Err("failed to read commit message".to_string()),
+    };
+}
+
+fn get_coauthors(aliases: Vec<String>) -> Result<Vec<String>, String> {
+    let config = get_config()?;
+    let coauthors: Result<Vec<String>, String> = aliases.iter().map(|alias| {
+        let coauthor = config.get(alias).ok_or("coauthor not found".to_string())?;
+        Ok(format!("Co-authored-by: {}", coauthor))
+    }).collect();
+
+    coauthors
 }
 
 fn add_to_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
-    let config = get_config()?;
-    let contains_all_keys = aliases.iter().all(|key| config.contains_key(key));
-    if !contains_all_keys {
-        return Err("coauthor not found".to_string());
-    }
-    let coauthors: Vec<String> = aliases.iter().map(|alias| {
-        let coauthor = config.get(alias).unwrap();
-        format!("Co-authored-by: {}", coauthor)
-    }).collect();
+    let coauthors = get_coauthors(aliases.clone())?;
 
     let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
     let head = repo.head().map_err(|_| "failed to find head".to_string())?;
     let commit = head.peel_to_commit().map_err(|_| "failed to find commit".to_string())?;
     let tree = commit.tree().map_err(|_| "failed to find tree".to_string())?;
 
-    if commit.message().is_none() {
-        return Err("failed to read commit message".to_string());
-    }
-    let message = commit.message().unwrap();
-    let mut lines: Vec<String> = message.lines().map(|line| line.to_string()).collect();
+    let message: Result<&str, String> = match commit.message() {
+        Some(message) => Ok(message),
+        None => return Err("failed to read commit message".to_string()),
+    };
+    let mut lines: Vec<String> = message?.lines().map(|line| line.to_string()).collect();
     let mut existing: Vec<String> = lines
         .iter()
         .filter(|&line| line.starts_with("Co-authored-by:"))
@@ -235,15 +234,7 @@ fn add_to_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
 }
 
 fn delete_from_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
-    let config = get_config()?;
-    let contains_all_keys = aliases.iter().all(|key| config.contains_key(key));
-    if !contains_all_keys {
-        return Err("coauthor not found".to_string());
-    }
-    let coauthors: Vec<String> = aliases.iter().map(|alias| {
-        let coauthor = config.get(alias).unwrap();
-        format!("Co-authored-by: {}", coauthor)
-    }).collect();
+    let coauthors = get_coauthors(aliases.clone())?;
 
     let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
     let head = repo.head().map_err(|_| "failed to find head".to_string())?;
@@ -253,8 +244,11 @@ fn delete_from_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
     if commit.message().is_none() {
         return Err("failed to read commit message".to_string());
     }
-    let message = commit.message().unwrap();
-    let mut lines: Vec<String> = message.lines().map(|line| line.to_string()).collect();
+    let message: Result<&str, String> = match commit.message() {
+        Some(message) => Ok(message),
+        None => return Err("failed to read commit message".to_string()),
+    };
+    let mut lines: Vec<String> = message?.lines().map(|line| line.to_string()).collect();
     lines = lines
         .iter()
         .filter(|&line| {

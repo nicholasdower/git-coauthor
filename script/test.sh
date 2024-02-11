@@ -43,7 +43,7 @@ git config user.email "nicholasdower@gmail.com"
 git config user.name "git-coauthor-ci"
 
 actual=$(./git-coauthor 2>&1)
-expected=$(echo "error: failed to get commit")
+expected=$(echo "error: failed to find head")
 test "no commit" "$actual" "$expected"
 
 git add foo
