@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
 if [[ -z "$RUNNER_TEMP" ]]; then
-  echo "RUNNER_TEMP not set" 1>&2
-  exit 1
+  dir="/tmp"
+else
+  dir="$RUNNER_TEMP"
 fi
 
-cp ./target/release/git-coauthor "$RUNNER_TEMP"
-cd "$RUNNER_TEMP"
+cp ./target/release/git-coauthor "$dir"
+cd "$dir"
 rm -rf sample-repo
 mkdir -p sample-repo
 mv ./git-coauthor sample-repo
@@ -48,8 +49,14 @@ test "no commit" "$actual" "$expected"
 git add foo
 git commit -m 'foo' --quiet
 
-echo "foo: Foo <foo@foo.com>" > .git/coauthors
-echo "bar: Bar <bar@bar.com>" >> .git/coauthors
+echo 'foo: bar' > .git/coauthors
+
+actual=$(./git-coauthor foo 2>&1)
+expected=$(echo "error: failed to read configuration")
+test "invalid config" "$actual" "$expected"
+
+echo 'foo = "Foo <foo@foo.com>"' > .git/coauthors
+echo 'bar = "Bar <bar@bar.com>"' >> .git/coauthors
 
 actual=$(./git-coauthor 2>&1)
 expected=$(echo "no coauthors")
@@ -99,7 +106,7 @@ test "delete multiple coauthors" "$actual" "$expected"
 
 git commit --amend -m 'foo' --quiet
 
-echo "foo: Other Foo <foo@foo.com>" > .gitcoauthors
+echo 'foo = "Other Foo <foo@foo.com>"' > .gitcoauthors
 
 actual=$(./git-coauthor foo bar 2>&1)
 expected=$(printf "Co-authored-by: Other Foo <foo@foo.com>\nCo-authored-by: Bar <bar@bar.com>\n")

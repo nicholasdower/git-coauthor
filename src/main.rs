@@ -1,7 +1,6 @@
 use clap::Parser;
 use git2::{Commit, ObjectType, Repository};
 use std::collections::HashMap;
-use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -22,8 +21,8 @@ Configuration
 
     Create a file like:
 
-        foo: Foo <foo@baz.com>
-        bar: Bar <bar@baz.com>
+        foo = \"Foo <foo@baz.com>\"
+        bar = \"Bar <bar@baz.com>\"
 
     Place the file in any of the following locations:
 
@@ -123,13 +122,11 @@ fn run() -> Result<Option<String>, String> {
 }
 
 fn get_config_for(path: &Path) -> Result<HashMap<String, String>, String> {
-    let file = File::open(path);
-    if file.is_err() {
-        return Ok(HashMap::new());
-    }
-    let config: Result<HashMap<String, String>, serde_yaml::Error> =
-        serde_yaml::from_reader(file.unwrap());
-    config.map_err(|_| "failed to read configuration".to_string())
+    let file = match std::fs::read_to_string(path) {
+        Ok(file) => toml::from_str(file.as_str()),
+        Err(_) => Ok(HashMap::new()),
+    };
+    file.map_err(|_| "failed to read configuration".to_string())
 }
 
 fn get_user_config() -> Result<HashMap<String, String>, String> {

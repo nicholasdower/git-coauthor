@@ -9,5 +9,5 @@ authors = ["Nick Dower <nicholasdower@gmail.com>"]
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 home = "0.5"
-serde_yaml = "0.9"
 git2 = "0.18"
+toml = "0.8"

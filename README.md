@@ -15,8 +15,8 @@ Configuration
 
     Create a file like:
 
-        foo: Foo <foo@baz.com>
-        bar: Bar <bar@baz.com>
+        foo = "Foo <foo@baz.com>"
+        bar = "Bar <bar@baz.com>"
 
     Place the file in any of the following locations:
 
