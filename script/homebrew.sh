@@ -30,13 +30,5 @@ class GitCoauthor < Formula
   test do
     assert_match "git-coauthor", shell_output("#{bin}/git-coauthor --version")
   end
-
-  def caveats
-    <<~EOS
-      To add the coauthor Git alias:
-
-        git config --global alias.coauthor '!git-coauthor'
-    EOS
-  end
 end
 EOF
