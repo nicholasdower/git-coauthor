@@ -7,24 +7,18 @@ List or add Git coauthors
 
 Configuration
 
-    Git coauthor is configured by creating a file like:
+    Create a file like:
 
-        <alias>: <name> <email>
-        <alias>: <name> <email>
+        foo: Foo <foo@baz.com>
+        bar: Bar <bar@baz.com>
 
-    The file can be placed in either or both of the following locations:
+    Place the file in any of the following locations:
 
         <home>/.gitcoauthors
+        <repo>/.gitcoauthors
         <repo>/.git/coauthors
 
-    If both files exist and contain the same alias, the alias in the repository file overrides the alias in the user file.
-
 Examples
-
-    Given a configuration file like:
-
-        foo: Foo Foo <foo@foo.foo>
-        bar: Bar Bar <bar@bar.bar>
 
     List coauthors on the HEAD commit:
 
@@ -38,11 +32,13 @@ Examples
 
         git coauthor foo bar
 
-Install
+Installation
 
-    brew install nicholasdower/tap/git-coauthor
+    Install:
 
-Uninstall
+        brew install nicholasdower/tap/git-coauthor
 
-    brew uninstall git-coauthor
+    Uninstall:
+
+        brew uninstall git-coauthor
 ```
