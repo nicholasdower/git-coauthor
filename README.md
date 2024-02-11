@@ -7,9 +7,9 @@ List, add or delete Git coauthors
 
 Options
 
-    -d, --delete    Delete coauthors
-    -h, --help      Show this message
-    -v, --version   Show version information
+    -d, --delete    Delete coauthors.
+    -h, --help      Print help.
+    -v, --version   Print version.
 
 Configuration
 
@@ -30,25 +30,17 @@ Examples
 
         git coauthor
 
-    Add a coauthor to the HEAD commit:
-
-        git coauthor foo
-
-    Add multiple coauthors to the HEAD commit:
+    Add coauthors to the HEAD commit:
 
         git coauthor foo bar
 
-    Delete a coauthor from the HEAD commit:
+    Delete coauthors from the HEAD commit:
 
-        git coauthor --delete foo
-
-    Delete multiple coauthors from the HEAD commit:
-
-        git coauthor --delete foo bar
+        git coauthor -d foo bar
 
     Delete all coauthors from the HEAD commit:
 
-        git coauthor --delete
+        git coauthor -d
 
 Installation
 
