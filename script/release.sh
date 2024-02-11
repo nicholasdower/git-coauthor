@@ -16,7 +16,7 @@ sed -i '' "s/^version = .*/version = \"$version\"/g" Cargo.toml
 
 echo "Build"
 rm -rf target
-cargo build --release --all-features
+cargo build --release
 
 echo "Lint"
 cargo clippy -- -Dwarnings
