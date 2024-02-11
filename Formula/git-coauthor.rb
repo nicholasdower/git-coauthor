@@ -1,8 +1,8 @@
 class GitCoauthor < Formula
   desc "List or add Git coauthors"
   homepage "https://github.com/nicholasdower/git-coauthor"
-  url "https://github.com/nicholasdower/git-coauthor/releases/download/v1.2.0/release.tar.gz"
-  sha256 "78b2b708044bc8f078ef39aadc2df2c875e41cb5074cee6b7fcc4cc820dc40a4"
+  url "https://github.com/nicholasdower/git-coauthor/releases/download/v2.0.0/release.tar.gz"
+  sha256 "e8f76cd20ff0dd68d9c3365a6a59222d412ce140a010de5e99b641c8d13fd0cf"
   license "MIT"
 
   def install

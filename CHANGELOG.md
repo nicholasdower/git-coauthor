@@ -1,3 +1,7 @@
+## 2.0.0
+
+- Switch configuration format to TOML.
+
 ## 1.2.0
 
 - Add support for deleting coauthors.
