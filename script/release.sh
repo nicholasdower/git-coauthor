@@ -53,6 +53,7 @@ echo "Add tag v$version"
 git tag "v$version"
 
 echo "Reset .release-notes"
+mkdir -p tmp
 cp .release-notes tmp/
 echo "- No changes" > .release-notes
 git add .release-notes
