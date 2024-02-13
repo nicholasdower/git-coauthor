@@ -1,6 +1,6 @@
 /target
 /bin
-/release.tar.gz
+/release*.tar.gz
 /tmp
 /release.tar.gz
 /tmp
