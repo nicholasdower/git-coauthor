@@ -30,7 +30,7 @@ jobs:
         with:
           toolchain: stable
       - name: Build
-        run: cargo build --release --all-features
+        run: cargo build
       - name: Lint
         run: cargo clippy -- -Dwarnings
       - name: Test

@@ -8,7 +8,7 @@ fi
 
 rm -rf "$dir"
 mkdir -p "$dir"
-cp ./target/release/git-coauthor "$dir"
+cp ./target/debug/git-coauthor "$dir"
 cd "$dir"
 
 function test() {

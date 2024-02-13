@@ -11,8 +11,8 @@ fi
 
 version="$1"
 
-x86_64_file="release-x86_64.tar.gz"
-arm_64_file="release-arm_64.tar.gz"
+x86_64_file="git-coauthor-$version-x86_64.tar.gz"
+arm_64_file="git-coauthor-$version-arm_64.tar.gz"
 
 if [ ! -f "$x86_64_file" ]; then
   echo "error: $x86_64_file not found" >&2
@@ -35,6 +35,7 @@ class GitCoauthor < Formula
   desc "List or add Git coauthors"
   homepage "https://github.com/nicholasdower/git-coauthor"
   license "MIT"
+  version "$version"
   if Hardware::CPU.arm?
     url "$arm_64_url"
     sha256 "$arm_64_sha"

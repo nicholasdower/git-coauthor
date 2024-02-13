@@ -16,7 +16,7 @@ sed -i '' "s/^version = .*/version = \"$version\"/g" Cargo.toml
 
 echo "Build"
 rm -rf target
-cargo build --release
+cargo build
 cargo build --release --target x86_64-apple-darwin
 cargo build --release --target aarch64-apple-darwin
 
@@ -29,8 +29,8 @@ RUNNER_TEMP=/tmp ./script/test.sh
 echo "Create man page"
 ./script/manpage.sh "$version" "$(date '+%Y-%m-%d')"
 
-x86_64_file="release-x86_64.tar.gz"
-arm_64_file="release-arm_64.tar.gz"
+x86_64_file="git-coauthor-$version-x86_64.tar.gz"
+arm_64_file="git-coauthor-$version-arm_64.tar.gz"
 
 echo "Create $x86_64_file"
 rm -rf bin
@@ -38,7 +38,6 @@ mkdir -p bin
 cp target/x86_64-apple-darwin/release/git-coauthor bin/git-coauthor
 rm -f "$x86_64_file"
 tar -czf "$x86_64_file" ./man/ ./bin/
-
 
 echo "Create $arm_64_file"
 rm -rf bin
@@ -63,12 +62,15 @@ echo -e "v$version Release\n\n$(cat .release-notes)" | git commit -a -F -
 echo "Add tag v$version"
 git tag "v$version"
 
-echo "Reset .release-notes"
 mkdir -p tmp
 cp .release-notes tmp/
 echo "- No changes" > .release-notes
-git add .release-notes
-git commit -a -m 'Post release'
+
+if ! `git diff --exit-code .release-notes > /dev/null 2>&1`; then
+  echo "Reset .release-notes"
+  git add .release-notes
+  git commit -a -m 'Post release'
+fi
 
 echo "Push changes"
 git push origin master
