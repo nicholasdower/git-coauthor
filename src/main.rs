@@ -1,7 +1,7 @@
 use clap::Parser;
 use git2::Repository;
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+
 use std::process::Command;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -19,16 +19,13 @@ Options
 
 Configuration
 
-    Create a file like:
+    Add a coauthor to the Git configuration:
 
-        foo = \"Foo <foo@baz.com>\"
-        bar = \"Bar <bar@baz.com>\"
+        git config --add coauthor.foo 'Foo <foo@foo.com>'
 
-    Place the file in any of the following locations:
+    Remove a coauthor from the Git configuration:
 
-        <home>/.gitcoauthors
-        <repo>/.gitcoauthors
-        <repo>/.git/coauthors
+        git config --unset coauthor.foo
 
 Examples
 
@@ -122,46 +119,21 @@ fn run() -> Result<Option<String>, String> {
     }
 }
 
-fn get_config_for(path: &Path) -> Result<HashMap<String, String>, String> {
-    let file = match std::fs::read_to_string(path) {
-        Ok(file) => toml::from_str(file.as_str()),
-        Err(_) => Ok(HashMap::new()),
-    };
-    file.map_err(|_| "failed to read configuration".to_string())
-}
-
-fn get_user_config() -> Result<HashMap<String, String>, String> {
-    let home_dir: Option<PathBuf> = home::home_dir();
-    return match home_dir {
-        Some(mut path_buf) => {
-            path_buf.push(".gitcoauthors");
-            get_config_for(path_buf.as_path())
-        },
-        None => Ok(HashMap::new()),
-    };
-}
-
-fn get_repo_config() -> Result<HashMap<String, String>, String> {
-    let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
-    let mut path_buf = repo.path().to_path_buf();
-    path_buf.push("..");
-    path_buf.push(".gitcoauthors");
-    return get_config_for(path_buf.as_path());
-}
-
-fn get_repo_git_config() -> Result<HashMap<String, String>, String> {
-    let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
-    let mut path_buf = repo.path().to_path_buf();
-    path_buf.push("coauthors");
-    return get_config_for(path_buf.as_path());
-}
-
 fn get_config() -> Result<HashMap<String, String>, String> {
-    let mut config = HashMap::new();
-    config.extend(get_user_config()?);
-    config.extend(get_repo_git_config()?);
-    config.extend(get_repo_config()?);
-    Ok(config)
+    let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
+    let cfg = repo.config().unwrap();
+
+    let entries = cfg.entries(Some("coauthor")).map_err(|_| "failed to read git config".to_string())?;
+    let mut config_map = HashMap::new();
+    entries.for_each(|entry| {
+        if let (Some(name), Some(value)) = (entry.name(), entry.value()) {
+            if let Some(alias) = name.strip_prefix("coauthor.") {
+                config_map.insert(alias.to_string(), value.to_string());
+            }
+        }
+    }).map_err(|_| "failed to read git config".to_string())?;
+
+    Ok(config_map)
 }
 
 fn read_from_commit() -> Result<Vec<String>, String> {

@@ -13,16 +13,13 @@ Options
 
 Configuration
 
-    Create a file like:
+    Add a coauthor to the Git configuration:
 
-        foo = "Foo <foo@baz.com>"
-        bar = "Bar <bar@baz.com>"
+        git config --add coauthor.foo 'Foo <foo@foo.com>'
 
-    Place the file in any of the following locations:
+    Remove a coauthor from the Git configuration:
 
-        <home>/.gitcoauthors
-        <repo>/.gitcoauthors
-        <repo>/.git/coauthors
+        git config --unset coauthor.foo
 
 Examples
 

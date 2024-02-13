@@ -42,14 +42,8 @@ test "no commit"
 git add foo
 git commit -m 'foo' --quiet
 
-echo 'foo: bar' > .git/coauthors
-
-./git-coauthor foo > actual 2>&1
-printf 'error: failed to read configuration\n' > expected
-test "invalid config"
-
-echo 'foo = "Foo <foo@foo.com>"' > .git/coauthors
-echo 'bar = "Bar <bar@bar.com>"' >> .git/coauthors
+git config --global --add coauthor.foo 'Foo <foo@foo.com>'
+git config --global --add coauthor.bar 'Bar <bar@bar.com>'
 
 ./git-coauthor > actual 2>&1
 printf 'no coauthors\n' > expected
@@ -99,11 +93,18 @@ test "delete multiple coauthors"
 
 git commit --amend -m 'foo' --quiet
 
-echo 'foo = "Other Foo <foo@foo.com>"' > .gitcoauthors
+git config --add coauthor.foo 'Other Foo <foo@foo.com>'
 
 ./git-coauthor foo bar > actual 2>&1
 printf 'Co-authored-by: Other Foo <foo@foo.com>\nCo-authored-by: Bar <bar@bar.com>\n' > expected
 test "override coauthor"
+
+git config --unset coauthor.foo
+./git-coauthor -d > /dev/null
+
+./git-coauthor foo bar > actual 2>&1
+printf 'Co-authored-by: Foo <foo@foo.com>\nCo-authored-by: Bar <bar@bar.com>\n' > expected
+test "un-override coauthor"
 
 ./git-coauthor -d > actual 2>&1
 printf 'no coauthors\n' > expected
