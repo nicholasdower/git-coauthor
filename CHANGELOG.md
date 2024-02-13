@@ -1,3 +1,7 @@
+## 5.0.0
+
+- Add arm build. Fix broken Homebrew version.
+
 ## 4.0.0
 
 - No changes
