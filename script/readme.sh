@@ -8,6 +8,6 @@ cat << EOF > README.md
 # git-coauthor
 
 \`\`\`
-$(./target/release/git-coauthor -h)
+$(./target/debug/git-coauthor -h)
 \`\`\`
 EOF
