@@ -36,8 +36,8 @@ echo "Create $x86_64_file"
 rm -rf bin
 mkdir -p bin
 cp target/x86_64-apple-darwin/release/git-coauthor bin/git-coauthor
-rm -f "$x86_file"
-tar -czf "$x86_file" ./man/ ./bin/
+rm -f "$x86_64_file"
+tar -czf "$x86_64_file" ./man/ ./bin/
 
 
 echo "Create $arm_64_file"
