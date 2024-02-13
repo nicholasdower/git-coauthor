@@ -11,24 +11,24 @@ fi
 
 version="$1"
 
-x86_64_file="git-coauthor-$version-x86_64.tar.gz"
-arm_64_file="git-coauthor-$version-arm_64.tar.gz"
+x86_64_apple_darwin_file="git-coauthor-$version-x86_64-apple-darwin.tar.gz"
+aarch64_apple_darwin_file="git-coauthor-$version-aarch64-apple-darwin.tar.gz"
 
-if [ ! -f "$x86_64_file" ]; then
-  echo "error: $x86_64_file not found" >&2
+if [ ! -f "$x86_64_apple_darwin_file" ]; then
+  echo "error: $x86_64_apple_darwin_file not found" >&2
   exit 1
 fi
 
-if [ ! -f "$arm_64_file" ]; then
-  echo "error: $arm_64_file not found" >&2
+if [ ! -f "$aarch64_apple_darwin_file" ]; then
+  echo "error: $aarch64_apple_darwin_file not found" >&2
   exit 1
 fi
 
-x86_64_url="https://github.com/nicholasdower/git-coauthor/releases/download/v$version/$x86_64_file"
-x86_64_sha=`shasum -a 256 "$x86_64_file" | cut -d' ' -f1`
+x86_64_apple_darwin_url="https://github.com/nicholasdower/git-coauthor/releases/download/v$version/$x86_64_apple_darwin_file"
+x86_64_apple_darwin_sha=`shasum -a 256 "$x86_64_apple_darwin_file" | cut -d' ' -f1`
 
-arm_64_url="https://github.com/nicholasdower/git-coauthor/releases/download/v$version/$arm_64_file"
-arm_64_sha=`shasum -a 256 "$arm_64_file" | cut -d' ' -f1`
+aarch64_apple_darwin_url="https://github.com/nicholasdower/git-coauthor/releases/download/v$version/$aarch64_apple_darwin_file"
+aarch64_apple_darwin_sha=`shasum -a 256 "$aarch64_apple_darwin_file" | cut -d' ' -f1`
 
 cat << EOF > Formula/git-coauthor.rb
 class GitCoauthor < Formula
@@ -37,11 +37,11 @@ class GitCoauthor < Formula
   license "MIT"
   version "$version"
   if Hardware::CPU.arm?
-    url "$arm_64_url"
-    sha256 "$arm_64_sha"
+    url "$aarch64_apple_darwin_url"
+    sha256 "$aarch64_apple_darwin_sha"
   elsif Hardware::CPU.intel?
-    url "$x86_64_url"
-    sha256 "$x86_64_sha"
+    url "$x86_64_apple_darwin_url"
+    sha256 "$x86_64_apple_darwin_sha"
   end
 
   def install

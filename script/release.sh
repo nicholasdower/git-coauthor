@@ -9,42 +9,40 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
+if [ -z "${HOMEBREW_PAT}" ]; then
+  echo "HOMEBREW_PAT not set" >&2
+  exit 1
+fi
+
+if [ -z "${GH_TOKEN}" ]; then
+  echo "GH_TOKEN not set" >&2
+  exit 1
+fi
+
 version="$1"
 
 echo "Set version to $version"
 sed -i '' "s/^version = .*/version = \"$version\"/g" Cargo.toml
 
-echo "Build"
-rm -rf target
-cargo build
-cargo build --release --target x86_64-apple-darwin
-cargo build --release --target aarch64-apple-darwin
-
-echo "Lint"
-cargo clippy -- -Dwarnings
-
-echo "Test"
-RUNNER_TEMP=/tmp ./script/test.sh
-
 echo "Create man page"
 ./script/manpage.sh "$version" "$(date '+%Y-%m-%d')"
 
-x86_64_file="git-coauthor-$version-x86_64.tar.gz"
-arm_64_file="git-coauthor-$version-arm_64.tar.gz"
+x86_64_apple_darwin_file="git-coauthor-$version-x86_64-apple-darwin.tar.gz"
+aarch64_apple_darwin_file="git-coauthor-$version-aarch64-apple-darwin.tar.gz"
 
-echo "Create $x86_64_file"
+echo "Create $x86_64_apple_darwin_file"
 rm -rf bin
 mkdir -p bin
-cp target/x86_64-apple-darwin/release/git-coauthor bin/git-coauthor
-rm -f "$x86_64_file"
-tar -czf "$x86_64_file" ./man/ ./bin/
+mv git-coauthor-x86_64-apple-darwin bin/git-coauthor
+rm -f "$x86_64_apple_darwin_file"
+tar -czf "$x86_64_apple_darwin_file" ./man/ ./bin/
 
-echo "Create $arm_64_file"
+echo "Create $aarch64_apple_darwin_file"
 rm -rf bin
 mkdir -p bin
-cp target/aarch64-apple-darwin/release/git-coauthor bin/git-coauthor
-rm -f "$arm_64_file"
-tar -czf "$arm_64_file" ./man/ ./bin/
+mv git-coauthor-aarch64-apple-darwin bin/git-coauthor
+rm -f "$aarch64_apple_darwin_file"
+tar -czf "$aarch64_apple_darwin_file" ./man/ ./bin/
 
 echo "Create Homebrew formula"
 ./script/homebrew.sh "$version"
@@ -55,9 +53,17 @@ echo "Update CHANGELOG.md"
 echo "Update README.md"
 ./script/readme.sh
 
+git config user.email "nicholasdower@gmail.com"
+git config user.name "git-coauthor-ci"
+
 echo "Commit changes"
-git add .
-echo -e "v$version Release\n\n$(cat .release-notes)" | git commit -a -F -
+git add CHANGELOG.md
+git add Cargo.lock
+git add Cargo.toml
+git add Formula/git-coauthor.rb
+git add README.md
+git add man/git-coauthor.1
+echo -e "v$version Release\n\n$(cat .release-notes)" | git commit -F -
 
 echo "Add tag v$version"
 git tag "v$version"
@@ -69,7 +75,7 @@ echo "- No changes" > .release-notes
 if ! `git diff --exit-code .release-notes > /dev/null 2>&1`; then
   echo "Reset .release-notes"
   git add .release-notes
-  git commit -a -m 'Post release'
+  git commit -m 'Post release'
 fi
 
 echo "Push changes"
@@ -77,7 +83,7 @@ git push origin master
 git push origin "v$version"
 
 echo "Create release"
-gh release create "v$version" "$x86_64_file" "$arm_64_file" -R nicholasdower/git-coauthor --notes-file tmp/.release-notes
+gh release create "v$version" "$x86_64_apple_darwin_file" "$aarch64_apple_darwin_file" -R nicholasdower/git-coauthor --notes-file tmp/.release-notes
 
 echo "Trigger Homebrew update"
-gh workflow run update.yml --ref master -R nicholasdower/homebrew-tap
+GH_TOKEN=$HOMEBREW_PAT gh workflow run update.yml --ref master -R nicholasdower/homebrew-tap
