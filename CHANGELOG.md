@@ -1,3 +1,7 @@
+## 3.0.0
+
+- Coauthors are now configured via Git config.
+
 ## 2.0.0
 
 - Switch configuration format to TOML.
