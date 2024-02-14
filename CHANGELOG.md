@@ -1,3 +1,8 @@
+## 5.2.0
+
+- Add x86_64-unknown-linux-gnu binary.
+- Fix stale version returned by `git coauthor -v`.
+
 ## 5.1.0
 
 - Decrease binary size.
