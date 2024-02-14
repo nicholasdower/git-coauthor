@@ -27,16 +27,8 @@ echo "Set version to $version"
 echo "Create man page"
 ./script/manpage.sh "$version" "$(date '+%Y-%m-%d')"
 
-x86_64_unknown_linux_gnu_file="git-coauthor-x86_64-unknown-linux-gnu.tar.gz"
 x86_64_apple_darwin_file="git-coauthor-$version-x86_64-apple-darwin.tar.gz"
 aarch64_apple_darwin_file="git-coauthor-$version-aarch64-apple-darwin.tar.gz"
-
-echo "Create $x86_64_unknown_linux_gnu_file"
-rm -rf bin
-mkdir -p bin
-mv git-coauthor-x86_64-unknown-linux-gnu bin/git-coauthor
-rm -f "$x86_64_unknown_linux_gnu_file"
-tar -czf "$x86_64_unknown_linux_gnu_file" ./man/ ./bin/
 
 echo "Create $x86_64_apple_darwin_file"
 rm -rf bin
@@ -92,7 +84,6 @@ git push origin "v$version"
 
 echo "Create release"
 gh release create "v$version" \
-  "$x86_64_unknown_linux_gnu_file" \
   "$x86_64_apple_darwin_file" \
   "$aarch64_apple_darwin_file" \
   -R nicholasdower/git-coauthor \
