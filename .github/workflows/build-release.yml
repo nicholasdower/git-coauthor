@@ -8,25 +8,11 @@ on:
 
 jobs:
   build:
-    name: Build (x86_64-apple-darwin)
-    # runs-on: macos-13
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      - name: Install
-        if: false
-        run: rustup target install x86_64-apple-darwin
-      - name: Build
-        if: false
-        run: cargo build --release --target x86_64-apple-darwin
-      - name: Fake Build
-        run: |
-          mkdir -p target/x86_64-apple-darwin/release/
-          echo foo > foo
+      - name: Create
+        run: echo foo > foo
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
@@ -37,8 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Download
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: foo
-    - name: Run
+    - name: Show
       run: cat foo
