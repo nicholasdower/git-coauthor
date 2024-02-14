@@ -23,6 +23,20 @@ fi
 cat << EOF > README.md
 # git-coauthor
 
+## Install
+
+\`\`\`shell
+brew install nicholasdower/tap/git-coauthor
+\`\`\`
+
+## Uninstall
+
+\`\`\`shell
+brew uninstall git-coauthor
+\`\`\`
+
+## Help
+
 \`\`\`
 $($binary -h)
 \`\`\`
