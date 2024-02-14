@@ -1,3 +1,7 @@
+## 5.1.0
+
+- Decrease binary size.
+
 ## 5.0.0
 
 - Add arm build. Fix broken Homebrew version.
