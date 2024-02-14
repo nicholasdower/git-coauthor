@@ -1,12 +1,10 @@
 name: Release
-
 on:
   workflow_dispatch:
     inputs:
       version:
         type: string
         description: 'Version'
-
 jobs:
   build-x86_64-apple-darwin:
     name: Build (x86_64-apple-darwin)
@@ -51,6 +49,7 @@ jobs:
       - build-aarch64-apple-darwin
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Download (x86_64-apple-darwin)
         uses: actions/download-artifact@v4
         with:
