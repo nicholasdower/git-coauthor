@@ -1,2 +1,1 @@
-- Add x86_64-unknown-linux-gnu binary.
-- Fix stale version returned by `git coauthor -v`.
+- No changes
