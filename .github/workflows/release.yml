@@ -17,8 +17,6 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - name: Install
-        run: rustup target install x86_64-apple-darwin
       - name: Build
         run: cargo build --release --target x86_64-apple-darwin
       - name: Upload
@@ -35,8 +33,6 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - name: Install
-        run: rustup target install aarch64-apple-darwin
       - name: Build
         run: cargo build --release --target aarch64-apple-darwin
       - name: Upload
@@ -52,11 +48,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download (x86_64-apple-darwin)
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: git-coauthor-x86_64-apple-darwin
       - name: Download (aarch64-apple-darwin)
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: git-coauthor-aarch64-apple-darwin
       - name: Release
