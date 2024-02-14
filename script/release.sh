@@ -51,7 +51,7 @@ echo "Update CHANGELOG.md"
 ./script/changelog.sh "$version"
 
 echo "Update README.md"
-./script/readme.sh
+./script/readme.sh target/release
 
 git config user.email "nicholasdower@gmail.com"
 git config user.name "git-coauthor-ci"
