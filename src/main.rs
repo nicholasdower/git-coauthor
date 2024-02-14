@@ -81,7 +81,7 @@ fn main() {
         Err(e) => {
             eprintln!("error: {}", e);
             std::process::exit(1);
-        },
+        }
     }
     std::process::exit(0);
 }
@@ -123,15 +123,19 @@ fn get_config() -> Result<HashMap<String, String>, String> {
     let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
     let cfg = repo.config().unwrap();
 
-    let entries = cfg.entries(Some("coauthor")).map_err(|_| "failed to read git config".to_string())?;
+    let entries = cfg
+        .entries(Some("coauthor"))
+        .map_err(|_| "failed to read git config".to_string())?;
     let mut config_map = HashMap::new();
-    entries.for_each(|entry| {
-        if let (Some(name), Some(value)) = (entry.name(), entry.value()) {
-            if let Some(alias) = name.strip_prefix("coauthor.") {
-                config_map.insert(alias.to_string(), value.to_string());
+    entries
+        .for_each(|entry| {
+            if let (Some(name), Some(value)) = (entry.name(), entry.value()) {
+                if let Some(alias) = name.strip_prefix("coauthor.") {
+                    config_map.insert(alias.to_string(), value.to_string());
+                }
             }
-        }
-    }).map_err(|_| "failed to read git config".to_string())?;
+        })
+        .map_err(|_| "failed to read git config".to_string())?;
 
     Ok(config_map)
 }
@@ -139,7 +143,9 @@ fn get_config() -> Result<HashMap<String, String>, String> {
 fn read_from_commit() -> Result<Vec<String>, String> {
     let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
     let head = repo.head().map_err(|_| "failed to find head".to_string())?;
-    let commit = head.peel_to_commit().map_err(|_| "failed to find commit".to_string())?;
+    let commit = head
+        .peel_to_commit()
+        .map_err(|_| "failed to find commit".to_string())?;
     return match commit.message() {
         Some(message) => {
             let coauthors: Vec<String> = message
@@ -148,17 +154,20 @@ fn read_from_commit() -> Result<Vec<String>, String> {
                 .map(|line| line.to_string())
                 .collect();
             Ok(coauthors)
-        },
+        }
         None => Err("failed to read commit message".to_string()),
     };
 }
 
 fn get_coauthors(aliases: Vec<String>) -> Result<Vec<String>, String> {
     let config = get_config()?;
-    let coauthors: Result<Vec<String>, String> = aliases.iter().map(|alias| {
-        let coauthor = config.get(alias).ok_or("coauthor not found".to_string())?;
-        Ok(format!("Co-authored-by: {}", coauthor))
-    }).collect();
+    let coauthors: Result<Vec<String>, String> = aliases
+        .iter()
+        .map(|alias| {
+            let coauthor = config.get(alias).ok_or("coauthor not found".to_string())?;
+            Ok(format!("Co-authored-by: {}", coauthor))
+        })
+        .collect();
 
     coauthors
 }
@@ -168,8 +177,12 @@ fn add_to_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
 
     let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
     let head = repo.head().map_err(|_| "failed to find head".to_string())?;
-    let commit = head.peel_to_commit().map_err(|_| "failed to find commit".to_string())?;
-    let tree = commit.tree().map_err(|_| "failed to find tree".to_string())?;
+    let commit = head
+        .peel_to_commit()
+        .map_err(|_| "failed to find commit".to_string())?;
+    let tree = commit
+        .tree()
+        .map_err(|_| "failed to find tree".to_string())?;
 
     let message: Result<&str, String> = match commit.message() {
         Some(message) => Ok(message),
@@ -193,14 +206,16 @@ fn add_to_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
     existing.extend(new_coauthors);
     let new_message = format!("{}\n", lines.join("\n"));
 
-    commit.amend(
-        Some("HEAD"),
-        None,
-        None,
-        None,
-        Some(new_message.as_str()),
-        Some(&tree),
-    ).map_err(|_| "failed to amend commit".to_string())?;
+    commit
+        .amend(
+            Some("HEAD"),
+            None,
+            None,
+            None,
+            Some(new_message.as_str()),
+            Some(&tree),
+        )
+        .map_err(|_| "failed to amend commit".to_string())?;
 
     Ok(existing)
 }
@@ -210,8 +225,12 @@ fn delete_from_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
 
     let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
     let head = repo.head().map_err(|_| "failed to find head".to_string())?;
-    let commit = head.peel_to_commit().map_err(|_| "failed to find commit".to_string())?;
-    let tree = commit.tree().map_err(|_| "failed to find tree".to_string())?;
+    let commit = head
+        .peel_to_commit()
+        .map_err(|_| "failed to find commit".to_string())?;
+    let tree = commit
+        .tree()
+        .map_err(|_| "failed to find tree".to_string())?;
 
     if commit.message().is_none() {
         return Err("failed to read commit message".to_string());
@@ -242,14 +261,16 @@ fn delete_from_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
     }
     let new_message = format!("{}\n", lines.join("\n"));
 
-    commit.amend(
-        Some("HEAD"),
-        None,
-        None,
-        None,
-        Some(new_message.as_str()),
-        Some(&tree),
-    ).map_err(|_| "failed to amend commit".to_string())?;
+    commit
+        .amend(
+            Some("HEAD"),
+            None,
+            None,
+            None,
+            Some(new_message.as_str()),
+            Some(&tree),
+        )
+        .map_err(|_| "failed to amend commit".to_string())?;
 
     Ok(new_coauthors)
 }
