@@ -33,6 +33,8 @@ jobs:
           toolchain: stable
       - name: Build
         run: cargo build
+      - name: Format
+        run: cargo fmt --check
       - name: Lint
         run: cargo clippy -- -Dwarnings
       - name: Test
