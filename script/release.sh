@@ -22,7 +22,11 @@ fi
 version="$1"
 
 echo "Set version to $version"
-sed -i '' "s/^version = .*/version = \"$version\"/g" Cargo.toml
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  sed -i "" "s/^version = .*/version = \"$version\"/g" Cargo.toml
+else
+  sed -i "s/^version = .*/version = \"$version\"/g" Cargo.toml
+fi
 
 echo "Create man page"
 ./script/manpage.sh "$version" "$(date '+%Y-%m-%d')"
