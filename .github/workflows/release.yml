@@ -6,8 +6,8 @@ on:
         type: string
         description: 'Version'
 jobs:
-  build-x86_64-apple-darwin:
-    name: Build (x86_64-apple-darwin)
+  build-macos-13-x86_64-apple-darwin:
+    name: Build (macOS 13, x86_64-apple-darwin)
     runs-on: macos-13
     timeout-minutes: 5
     steps:
@@ -22,14 +22,14 @@ jobs:
       - name: Test
         run: ./script/test.sh target/x86_64-apple-darwin/release
       - name: Rename
-        run: mv target/x86_64-apple-darwin/release/git-coauthor git-coauthor-x86_64-apple-darwin
+        run: mv target/x86_64-apple-darwin/release/git-coauthor git-coauthor-macos-13-x86_64-apple-darwin
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: git-coauthor-x86_64-apple-darwin
-          path: git-coauthor-x86_64-apple-darwin
-  build-aarch64-apple-darwin:
-    name: Build (aarch64-apple-darwin)
+          name: git-coauthor-macos-13-x86_64-apple-darwin
+          path: git-coauthor-macos-13-x86_64-apple-darwin
+  build-macos-14-aarch64-apple-darwin:
+    name: Build (macOS 14, aarch64-apple-darwin)
     runs-on: macos-14
     timeout-minutes: 5
     steps:
@@ -44,28 +44,28 @@ jobs:
       - name: Test
         run: ./script/test.sh target/aarch64-apple-darwin/release
       - name: Rename
-        run: mv target/aarch64-apple-darwin/release/git-coauthor git-coauthor-aarch64-apple-darwin
+        run: mv target/aarch64-apple-darwin/release/git-coauthor git-coauthor-macos-14-aarch64-apple-darwin
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: git-coauthor-aarch64-apple-darwin
-          path: git-coauthor-aarch64-apple-darwin
+          name: git-coauthor-macos-14-aarch64-apple-darwin
+          path: git-coauthor-macos-14-aarch64-apple-darwin
   release:
     name: Release
     needs:
-      - build-x86_64-apple-darwin
-      - build-aarch64-apple-darwin
+      - build-macos-13-x86_64-apple-darwin
+      - build-macos-14-aarch64-apple-darwin
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download (x86_64-apple-darwin)
+      - name: Download (macOS 13, x86_64-apple-darwin)
         uses: actions/download-artifact@v4
         with:
-          name: git-coauthor-x86_64-apple-darwin
-      - name: Download (aarch64-apple-darwin)
+          name: git-coauthor-macos-13-x86_64-apple-darwin
+      - name: Download (macOS 14, aarch64-apple-darwin)
         uses: actions/download-artifact@v4
         with:
-          name: git-coauthor-aarch64-apple-darwin
+          name: git-coauthor-macos-14-aarch64-apple-darwin
       - name: Set Version
         run: ./script/version.sh ${{ inputs.version }}
       - name: Build

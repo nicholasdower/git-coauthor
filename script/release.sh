@@ -27,22 +27,48 @@ echo "Set version to $version"
 echo "Create man page"
 ./script/manpage.sh "$version" "$(date '+%Y-%m-%d')"
 
-x86_64_apple_darwin_file="git-coauthor-$version-x86_64-apple-darwin.tar.gz"
-aarch64_apple_darwin_file="git-coauthor-$version-aarch64-apple-darwin.tar.gz"
+# Keep this list in sync with homebrew.sh
+monterey_file="git-coauthor-$version.monterey.bottle.1.tar.gz"
+ventura_file="git-coauthor-$version.ventura.bottle.1.tar.gz"
+sonoma_file="git-coauthor-$version.sonoma.bottle.1.tar.gz"
 
-echo "Create $x86_64_apple_darwin_file"
-rm -rf bin
-mkdir -p bin
-mv git-coauthor-x86_64-apple-darwin bin/git-coauthor
-rm -f "$x86_64_apple_darwin_file"
-tar -czf "$x86_64_apple_darwin_file" ./man/ ./bin/
+arm64_monterey_file="git-coauthor-$version.arm64_monterey.bottle.1.tar.gz"
+arm64_ventura_file="git-coauthor-$version.arm64_ventura.bottle.1.tar.gz"
+arm64_sonoma_file="git-coauthor-$version.arm64_sonoma.bottle.1.tar.gz"
 
-echo "Create $aarch64_apple_darwin_file"
-rm -rf bin
-mkdir -p bin
-mv git-coauthor-aarch64-apple-darwin bin/git-coauthor
-rm -f "$aarch64_apple_darwin_file"
-tar -czf "$aarch64_apple_darwin_file" ./man/ ./bin/
+release_file="git-coauthor-$version.tar.gz"
+
+echo "Create $ventura_file"
+rm -rf git-coauthor
+mkdir -p "git-coauthor/$version/bin"
+mkdir -p "git-coauthor/$version/share/man/man1"
+mv git-coauthor-macos-13-x86_64-apple-darwin "git-coauthor/$version/bin/git-coauthor"
+cp man/git-coauthor.1 "git-coauthor/$version/share/man/man1/"
+tar -czf "$ventura_file" git-coauthor
+
+echo "Create $arm64_sonoma_file"
+rm -rf git-coauthor
+mkdir -p "git-coauthor/$version/bin"
+mkdir -p "git-coauthor/$version/share/man/man1"
+mv git-coauthor-macos-14-aarch64-apple-darwin "git-coauthor/$version/bin/git-coauthor"
+mv man/git-coauthor.1 "git-coauthor/$version/share/man/man1/"
+tar -czf "$arm64_sonoma_file" git-coauthor
+
+# A bit of cheating
+echo "Create $arm64_monterey_file"
+cp "$arm64_sonoma_file" "$arm64_monterey_file"
+
+echo "Create $arm64_ventura_file"
+cp "$arm64_sonoma_file" "$arm64_ventura_file"
+
+echo "Create $monterey_file"
+cp "$ventura_file" "$monterey_file"
+
+echo "Create $sonoma_file"
+cp "$ventura_file" "$sonoma_file"
+
+echo "Create $release_file"
+tar -czf "$release_file" ./man/ ./src/ Cargo.lock Cargo.toml
 
 echo "Create Homebrew formula"
 ./script/homebrew.sh "$version"
@@ -84,8 +110,13 @@ git push origin "v$version"
 
 echo "Create release"
 gh release create "v$version" \
-  "$x86_64_apple_darwin_file" \
-  "$aarch64_apple_darwin_file" \
+  "$monterey_file" \
+  "$ventura_file" \
+  "$sonoma_file" \
+  "$arm64_monterey_file" \
+  "$arm64_ventura_file" \
+  "$arm64_sonoma_file" \
+  "$release_file" \
   -R nicholasdower/git-coauthor \
   --notes-file tmp/.release-notes
 

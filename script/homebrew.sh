@@ -11,24 +11,31 @@ fi
 
 version="$1"
 
-x86_64_apple_darwin_file="git-coauthor-$version-x86_64-apple-darwin.tar.gz"
-aarch64_apple_darwin_file="git-coauthor-$version-aarch64-apple-darwin.tar.gz"
+function generate_sha {
+  version="$1"
+  name="$2"
+  file="git-coauthor-$version.$name.bottle.1.tar.gz"
+  if [ ! -f "$file" ]; then
+    echo "error: $file not found" >&2
+    exit 1
+  fi
+  sha=`shasum -a 256 "$file" | cut -d' ' -f1`
+  echo $sha
+}
 
-if [ ! -f "$x86_64_apple_darwin_file" ]; then
-  echo "error: $x86_64_apple_darwin_file not found" >&2
+release_file="git-coauthor-$version.tar.gz"
+if [ ! -f "$release_file" ]; then
+  echo "error: $release_file not found" >&2
   exit 1
 fi
 
-if [ ! -f "$aarch64_apple_darwin_file" ]; then
-  echo "error: $aarch64_apple_darwin_file not found" >&2
-  exit 1
-fi
-
-x86_64_apple_darwin_url="https://github.com/nicholasdower/git-coauthor/releases/download/v$version/$x86_64_apple_darwin_file"
-x86_64_apple_darwin_sha=`shasum -a 256 "$x86_64_apple_darwin_file" | cut -d' ' -f1`
-
-aarch64_apple_darwin_url="https://github.com/nicholasdower/git-coauthor/releases/download/v$version/$aarch64_apple_darwin_file"
-aarch64_apple_darwin_sha=`shasum -a 256 "$aarch64_apple_darwin_file" | cut -d' ' -f1`
+release=`shasum -a 256 "$release_file" | cut -d' ' -f1`
+monterey=`generate_sha "$version" "monterey"`
+ventura=`generate_sha "$version" "ventura"`
+sonoma=`generate_sha "$version" "sonoma"`
+arm64_sonoma=`generate_sha "$version" "arm64_sonoma"`
+arm64_monterey=`generate_sha "$version" "arm64_monterey"`
+arm64_ventura=`generate_sha "$version" "arm64_ventura"`
 
 cat << EOF > Formula/git-coauthor.rb
 class GitCoauthor < Formula
@@ -36,16 +43,25 @@ class GitCoauthor < Formula
   homepage "https://github.com/nicholasdower/git-coauthor"
   license "MIT"
   version "$version"
-  if Hardware::CPU.arm?
-    url "$aarch64_apple_darwin_url"
-    sha256 "$aarch64_apple_darwin_sha"
-  elsif Hardware::CPU.intel?
-    url "$x86_64_apple_darwin_url"
-    sha256 "$x86_64_apple_darwin_sha"
+
+  url "https://github.com/nicholasdower/git-coauthor/releases/download/v$version/$release_file"
+  sha256 "$release"
+
+  bottle do
+    rebuild 1
+    root_url "https://github.com/nicholasdower/git-coauthor/releases/download/v$version/"
+    sha256 cellar: :any, monterey: "$monterey"
+    sha256 cellar: :any, ventura: "$ventura"
+    sha256 cellar: :any, sonoma: "$sonoma"
+    sha256 cellar: :any, arm64_sonoma: "$arm64_sonoma"
+    sha256 cellar: :any, arm64_monterey: "$arm64_monterey"
+    sha256 cellar: :any, arm64_ventura: "$arm64_ventura"
   end
 
+  depends_on "rust" => :build
+
   def install
-    bin.install "bin/git-coauthor"
+    system "cargo", "install", *std_cargo_args
     man1.install "man/git-coauthor.1"
   end
 
