@@ -38,14 +38,4 @@ Examples
     Delete all coauthors from the HEAD commit:
 
         git coauthor -d
-
-Installation
-
-    Install:
-
-        brew install nicholasdower/tap/git-coauthor
-
-    Uninstall:
-
-        brew uninstall git-coauthor
 ```
