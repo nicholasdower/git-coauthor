@@ -9,17 +9,17 @@ on:
     paths:
       - '**'
       - '!**/*.md'
-      - '!/.release-notes'
-      - '!/Formula/git-coauthor.rb'
-      - '!/man/git-coauthor.1'
-      - '!/script/changelog.sh'
-      - '!/script/homebrew.sh'
-      - '!/script/manpage.sh'
-      - '!/script/readme.sh'
-      - '!/script/release.sh'
-      - '!/LICENSE.txt'
-      - '!/.github/dependabot.yml'
-      - '!/.github/workflows/release.yml'
+      - '!.release-notes'
+      - '!Formula/git-coauthor.rb'
+      - '!man/git-coauthor.1'
+      - '!script/changelog.sh'
+      - '!script/homebrew.sh'
+      - '!script/manpage.sh'
+      - '!script/readme.sh'
+      - '!script/release.sh'
+      - '!LICENSE.txt'
+      - '!.github/dependabot.yml'
+      - '!.github/workflows/release.yml'
 
 jobs:
   build-lint-test:
