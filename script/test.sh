@@ -6,9 +6,25 @@ else
   dir="$RUNNER_TEMP/git-coauthor"
 fi
 
+if [ $# -gt 1 ]; then
+  echo "usage: $0 [<bin-path>]" >&2
+  exit 1
+fi
+
+if [ $# -eq 1 ]; then
+  binary="$1/git-coauthor"
+else
+  binary="./target/debug/git-coauthor"
+fi
+
+if [ ! -f "$binary" ]; then
+  echo "error: $binary does not exist" >&2
+  exit 1
+fi
+
 rm -rf "$dir"
 mkdir -p "$dir"
-cp ./target/debug/git-coauthor "$dir"
+cp "$binary" "$dir"
 cd "$dir"
 
 function test() {
