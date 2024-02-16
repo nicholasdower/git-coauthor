@@ -1,3 +1,7 @@
+## 5.2.2
+
+- Make binary executable.
+
 ## 5.2.1
 
 - Add Homebrew bottles.
