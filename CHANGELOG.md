@@ -1,3 +1,7 @@
+## 5.2.1
+
+- Add Homebrew bottles.
+
 ## 5.2.0
 
 - Add x86_64-unknown-linux-gnu binary.

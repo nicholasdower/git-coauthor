@@ -2,20 +2,20 @@ class GitCoauthor < Formula
   desc "List or add Git coauthors"
   homepage "https://github.com/nicholasdower/git-coauthor"
   license "MIT"
-  version "5.2.0"
+  version "5.2.1"
 
-  url "https://github.com/nicholasdower/git-coauthor/releases/download/v5.2.0/git-coauthor-5.2.0.tar.gz"
-  sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  url "https://github.com/nicholasdower/git-coauthor/releases/download/v5.2.1/git-coauthor-5.2.1.tar.gz"
+  sha256 "186d5719267bde3c64b93dd5e7f4833074918d2669a764e0e1279aee3663df52"
 
   bottle do
     rebuild 1
-    root_url "https://github.com/nicholasdower/git-coauthor/releases/download/v5.2.0/"
-    sha256 cellar: :any, monterey: "ffc0f92960afd03582ead5dc999f87b986465275cd73213d46f8372ce5e71aad"
-    sha256 cellar: :any, ventura: "ffc0f92960afd03582ead5dc999f87b986465275cd73213d46f8372ce5e71aad"
-    sha256 cellar: :any, sonoma: "ffc0f92960afd03582ead5dc999f87b986465275cd73213d46f8372ce5e71aad"
-    sha256 cellar: :any, arm64_sonoma: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    sha256 cellar: :any, arm64_monterey: "ffc0f92960afd03582ead5dc999f87b986465275cd73213d46f8372ce5e71aad"
-    sha256 cellar: :any, arm64_ventura: "ffc0f92960afd03582ead5dc999f87b986465275cd73213d46f8372ce5e71aad"
+    root_url "https://github.com/nicholasdower/git-coauthor/releases/download/v5.2.1/"
+    sha256 cellar: :any, monterey: "39965896d182fa2b1ed47d32043b8012ce1dfcb9453d198c1cf6dab94c8d0610"
+    sha256 cellar: :any, ventura: "39965896d182fa2b1ed47d32043b8012ce1dfcb9453d198c1cf6dab94c8d0610"
+    sha256 cellar: :any, sonoma: "39965896d182fa2b1ed47d32043b8012ce1dfcb9453d198c1cf6dab94c8d0610"
+    sha256 cellar: :any, arm64_sonoma: "1b6af0dd3a6cf202c7914fb8c7a35aebd8844482293d333bbe22170e6cb309cf"
+    sha256 cellar: :any, arm64_monterey: "1b6af0dd3a6cf202c7914fb8c7a35aebd8844482293d333bbe22170e6cb309cf"
+    sha256 cellar: :any, arm64_ventura: "1b6af0dd3a6cf202c7914fb8c7a35aebd8844482293d333bbe22170e6cb309cf"
   end
 
   depends_on "rust" => :build
