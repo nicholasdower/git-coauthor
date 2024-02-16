@@ -42,6 +42,7 @@ echo "Create $ventura_file"
 rm -rf git-coauthor
 mkdir -p "git-coauthor/$version/bin"
 mkdir -p "git-coauthor/$version/share/man/man1"
+chmod +x git-coauthor-macos-13-x86_64-apple-darwin
 mv git-coauthor-macos-13-x86_64-apple-darwin "git-coauthor/$version/bin/git-coauthor"
 cp man/git-coauthor.1 "git-coauthor/$version/share/man/man1/"
 tar -czf "$ventura_file" git-coauthor
@@ -50,6 +51,7 @@ echo "Create $arm64_sonoma_file"
 rm -rf git-coauthor
 mkdir -p "git-coauthor/$version/bin"
 mkdir -p "git-coauthor/$version/share/man/man1"
+chmod +x git-coauthor-macos-14-aarch64-apple-darwin
 mv git-coauthor-macos-14-aarch64-apple-darwin "git-coauthor/$version/bin/git-coauthor"
 mv man/git-coauthor.1 "git-coauthor/$version/share/man/man1/"
 tar -czf "$arm64_sonoma_file" git-coauthor
