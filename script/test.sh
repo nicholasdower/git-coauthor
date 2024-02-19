@@ -66,7 +66,7 @@ printf 'no coauthors\n' > expected
 test "list no coauthors"
 
 ./git-coauthor baz > actual 2>&1
-printf 'error: coauthor not found\n' > expected
+printf 'error: coauthor not found: baz\n' > expected
 test "bad coauthors"
 
 ./git-coauthor foo > actual 2>&1
@@ -125,3 +125,41 @@ test "un-override coauthor"
 ./git-coauthor -d > actual 2>&1
 printf 'no coauthors\n' > expected
 test "delete all coauthors"
+
+git config user.email "joeblow@foo.com"
+git config user.name "Joe Blow"
+touch bar
+git add bar
+git commit -a -m 'Bar' -m 'Co-authored-by: Jim Bob <jimbob@foo.com>' --quiet
+
+touch baz
+git add baz
+git commit -a -m 'Baz' --quiet
+
+./git-coauthor Joe > actual 2>&1
+printf 'Co-authored-by: Joe Blow <joeblow@foo.com>\n' > expected
+test "coauthor by author first name"
+
+./git-coauthor -d >/dev/null
+
+./git-coauthor Blow > actual 2>&1
+printf 'Co-authored-by: Joe Blow <joeblow@foo.com>\n' > expected
+test "coauthor by author last name"
+
+./git-coauthor -d >/dev/null
+
+./git-coauthor Jim > actual 2>&1
+printf 'Co-authored-by: Jim Bob <jimbob@foo.com>\n' > expected
+test "coauthor by previous co-author first name"
+
+./git-coauthor -d >/dev/null
+
+./git-coauthor Bob > actual 2>&1
+printf 'Co-authored-by: Jim Bob <jimbob@foo.com>\n' > expected
+test "coauthor by previous co-author last name"
+
+./git-coauthor -d >/dev/null
+
+./git-coauthor Joe Jim > actual 2>&1
+printf 'Co-authored-by: Joe Blow <joeblow@foo.com>\nCo-authored-by: Jim Bob <jimbob@foo.com>\n' > expected
+test "coauthor by previous co-authors and authors"

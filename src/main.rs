@@ -1,6 +1,6 @@
 use clap::Parser;
-use git2::Repository;
-use std::collections::HashMap;
+use git2::{Error, Repository};
+use std::collections::{HashMap, HashSet};
 
 use std::process::Command;
 
@@ -11,6 +11,12 @@ usage: git coauthor [-d] [<alias>...]
 
 List, add or delete Git coauthors
 
+Description
+
+    Git coauthor manages \"Co-authored-by\" lines on the HEAD commit. Coauthors
+    are specified as names from the repository's commit history or aliases configured
+    via `git config`.
+
 Options
 
     -d, --delete    Delete coauthors.
@@ -19,13 +25,13 @@ Options
 
 Configuration
 
-    Add a coauthor to the Git configuration:
+    Optionally, coauthor aliases can be added to the Git config:
 
-        git config --add coauthor.foo 'Foo <foo@foo.com>'
+        git config --add coauthor.joe 'Joe Blow <foo@foo.com>'
 
-    Remove a coauthor from the Git configuration:
+    To remove a coauthor from the Git config:
 
-        git config --unset coauthor.foo
+        git config --unset coauthor.joe
 
 Examples
 
@@ -35,11 +41,15 @@ Examples
 
     Add coauthors to the HEAD commit:
 
-        git coauthor foo bar
+        git coauthor Joe
+        git coauthor Joe Jim
+        git coauthor \"Joe Blow\" \"Jim Bob\"
 
     Delete coauthors from the HEAD commit:
 
-        git coauthor -d foo bar
+        git coauthor -d Joe
+        git coauthor -d Joe Jim
+        git coauthor -d \"Joe Blow\" \"Jim Bob\"
 
     Delete all coauthors from the HEAD commit:
 
@@ -78,6 +88,14 @@ fn main() {
 
 fn run() -> Result<Option<String>, String> {
     let args = Cli::try_parse().map_err(|e| format!("{}\n{}", e.kind(), SHORT_HELP))?;
+    let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
+
+    let aliases = without_duplicates(
+        args.aliases
+            .iter()
+            .map(|alias| alias.to_lowercase())
+            .collect(),
+    );
 
     if args.short_help {
         Ok(Some(SHORT_HELP.to_string()))
@@ -86,18 +104,18 @@ fn run() -> Result<Option<String>, String> {
             .arg("git-coauthor")
             .status()
             .map_err(|_| "failed to execute man".to_string())?;
-        return Ok(None); // todo
+        Ok(None)
     } else if args.version {
         Ok(Some(format!("git-coauthor {}", VERSION)))
     } else if args.delete {
-        let coauthors = delete_from_commit(args.aliases)?;
+        let coauthors = delete_from_commit(&repo, aliases)?;
         if coauthors.is_empty() {
             Ok(Some("no coauthors".to_string()))
         } else {
             Ok(Some(coauthors.join("\n")))
         }
     } else if !args.aliases.is_empty() {
-        let coauthors = add_to_commit(args.aliases)?.join("\n");
+        let coauthors = add_to_commit(&repo, aliases)?.join("\n");
         Ok(Some(coauthors))
     } else {
         let coauthors = read_from_commit()?;
@@ -109,8 +127,7 @@ fn run() -> Result<Option<String>, String> {
     }
 }
 
-fn get_config() -> Result<HashMap<String, String>, String> {
-    let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
+fn get_config(repo: &Repository) -> Result<HashMap<String, String>, String> {
     let cfg = repo.config().unwrap();
 
     let entries = cfg
@@ -132,11 +149,8 @@ fn get_config() -> Result<HashMap<String, String>, String> {
 
 fn read_from_commit() -> Result<Vec<String>, String> {
     let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
-    let head = repo.head().map_err(|_| "failed to find head".to_string())?;
-    let commit = head
-        .peel_to_commit()
-        .map_err(|_| "failed to find commit".to_string())?;
-    return match commit.message() {
+    let commit = head_commit(&repo)?;
+    match commit.message() {
         Some(message) => {
             let coauthors: Vec<String> = message
                 .lines()
@@ -146,30 +160,103 @@ fn read_from_commit() -> Result<Vec<String>, String> {
             Ok(coauthors)
         }
         None => Err("failed to read commit message".to_string()),
-    };
+    }
 }
 
-fn get_coauthors(aliases: Vec<String>) -> Result<Vec<String>, String> {
-    let config = get_config()?;
-    let coauthors: Result<Vec<String>, String> = aliases
-        .iter()
-        .map(|alias| {
-            let coauthor = config.get(alias).ok_or("coauthor not found".to_string())?;
-            Ok(format!("Co-authored-by: {}", coauthor))
-        })
-        .collect();
+fn get_coauthors(repo: &Repository, aliases: &[String]) -> Result<Vec<String>, String> {
+    let mut remaining_aliases = aliases.to_vec();
+    let mut alias_to_coauthor = HashMap::new();
 
-    coauthors
+    get_coauthors_from_config(repo, &mut remaining_aliases, &mut alias_to_coauthor)?;
+    if !remaining_aliases.is_empty() {
+        get_coauthors_from_log(repo, &mut remaining_aliases, &mut alias_to_coauthor)
+            .map_err(|_| "failed to read log".to_string())?;
+    }
+
+    match remaining_aliases.len() {
+        0 => Ok(aliases.iter().map(|alias| alias_to_coauthor.get(alias).unwrap().to_string()).collect()),
+        1 => Err(format!("coauthor not found: {}", remaining_aliases[0])),
+        _ => Err(format!("coauthors not found: {}", remaining_aliases.join(","))),
+    }
 }
 
-fn add_to_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
-    let coauthors = get_coauthors(aliases.clone())?;
+fn get_coauthors_from_config(
+    repo: &Repository,
+    remaining_aliases: &mut Vec<String>,
+    alias_to_coauthor: &mut HashMap<String, String>,
+) -> Result<(), String> {
+    let config = get_config(repo)?;
+    remaining_aliases.retain(|alias| match config.get(alias) {
+        Some(coauthor) => {
+            alias_to_coauthor.insert(alias.clone(), format!("Co-authored-by: {}", coauthor));
+            false
+        }
+        None => true,
+    });
+    Ok(())
+}
 
-    let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
-    let head = repo.head().map_err(|_| "failed to find head".to_string())?;
-    let commit = head
-        .peel_to_commit()
-        .map_err(|_| "failed to find commit".to_string())?;
+fn get_coauthors_from_log(
+    repo: &Repository,
+    remaining_aliases: &mut Vec<String>,
+    alias_to_coauthor: &mut HashMap<String, String>,
+) -> Result<(), Error> {
+    let mut revwalk = repo.revwalk()?;
+    revwalk.push_head()?;
+    revwalk.set_sorting(git2::Sort::TIME)?;
+
+    for rev in revwalk {
+        if remaining_aliases.is_empty() {
+            break;
+        };
+
+        let commit = repo.find_commit(rev?)?;
+        let signature = commit.author();
+        let email = String::from_utf8_lossy(signature.email_bytes());
+        let name = String::from_utf8_lossy(signature.name_bytes());
+        let name_lower = name.to_lowercase();
+        let name_parts : Vec<&str> = name_lower.split_whitespace().collect();
+        remaining_aliases.retain(|alias| {
+            let found = name_parts.contains(&alias.as_str()) || name_lower.eq(alias);
+            if found {
+                alias_to_coauthor.insert(
+                    alias.clone(),
+                    format!("Co-authored-by: {} <{}>", name, email),
+                );
+            }
+
+            !found
+        });
+
+        let message = commit.message();
+        if message.is_none() {
+            continue;
+        }
+
+        let lines: Vec<&str> = message.unwrap().lines().collect();
+        lines
+            .iter()
+            .filter(|&line| line.starts_with("Co-authored-by:") && line.contains('<'))
+            .for_each(|line| {
+                let name_lower = line[15..].split('<').next().unwrap().trim().to_lowercase();
+                let name_parts : Vec<&str> = name_lower.split_whitespace().collect();
+                remaining_aliases.retain(|alias| {
+                    let found = name_parts.contains(&alias.as_str()) || name_lower.eq(alias);
+                    if found {
+                        alias_to_coauthor.insert(alias.clone(), line.to_string());
+                    }
+
+                    !found
+                });
+            });
+    }
+    Ok(())
+}
+
+fn add_to_commit(repo: &Repository, aliases: Vec<String>) -> Result<Vec<String>, String> {
+    let coauthors = get_coauthors(repo, &aliases)?;
+
+    let commit = head_commit(repo)?;
     let tree = commit
         .tree()
         .map_err(|_| "failed to find tree".to_string())?;
@@ -210,14 +297,10 @@ fn add_to_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
     Ok(existing)
 }
 
-fn delete_from_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
-    let coauthors = get_coauthors(aliases.clone())?;
+fn delete_from_commit(repo: &Repository, aliases: Vec<String>) -> Result<Vec<String>, String> {
+    let coauthors = get_coauthors(repo, &aliases)?;
 
-    let repo = Repository::open_from_env().map_err(|_| "failed to find repository".to_string())?;
-    let head = repo.head().map_err(|_| "failed to find head".to_string())?;
-    let commit = head
-        .peel_to_commit()
-        .map_err(|_| "failed to find commit".to_string())?;
+    let commit = head_commit(repo)?;
     let tree = commit
         .tree()
         .map_err(|_| "failed to find tree".to_string())?;
@@ -263,4 +346,23 @@ fn delete_from_commit(aliases: Vec<String>) -> Result<Vec<String>, String> {
         .map_err(|_| "failed to amend commit".to_string())?;
 
     Ok(new_coauthors)
+}
+
+fn head_commit(repo: &Repository) -> Result<git2::Commit<'_>, String> {
+    let head = repo.head().map_err(|_| "failed to find head".to_string())?;
+    let commit = head
+        .peel_to_commit()
+        .map_err(|_| "failed to find commit".to_string())?;
+    Ok(commit)
+}
+
+fn without_duplicates(vec: Vec<String>) -> Vec<String> {
+    let mut seen = HashSet::new();
+    let mut result = Vec::new();
+    for item in vec {
+        if seen.insert(item.clone()) {
+            result.push(item);
+        }
+    }
+    result
 }
