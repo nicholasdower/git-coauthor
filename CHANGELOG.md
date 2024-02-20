@@ -1,3 +1,7 @@
+## 6.0.0
+
+- Coauthors can now be specified using names or emails from Git log.
+
 ## 5.2.2
 
 - Make binary executable.
