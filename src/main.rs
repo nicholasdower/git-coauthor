@@ -14,8 +14,8 @@ List, add or delete Git coauthors
 Description
 
     Git coauthor manages \"Co-authored-by\" lines on the HEAD commit. Coauthors
-    are specified as names from the repository's commit history or aliases configured
-    via `git config`.
+    are specified as name or email details from the repository's commit history
+    or as aliases configured via `git config`.
 
 Options
 
@@ -72,6 +72,22 @@ struct Cli {
 
     #[arg(short, long)]
     delete: bool,
+}
+
+struct CoauthorParts {
+    name: String,
+    name_parts: Vec<String>,
+    email: String,
+    email_local: String,
+}
+
+impl CoauthorParts {
+    fn matches(&self, alias: &String) -> bool {
+        self.name_parts.contains(alias)
+            || self.name.eq(alias)
+            || self.email_local.eq(alias)
+            || self.email.eq(alias)
+    }
 }
 
 fn main() {
@@ -174,9 +190,15 @@ fn get_coauthors(repo: &Repository, aliases: &[String]) -> Result<Vec<String>, S
     }
 
     match remaining_aliases.len() {
-        0 => Ok(aliases.iter().map(|alias| alias_to_coauthor.get(alias).unwrap().to_string()).collect()),
+        0 => Ok(aliases
+            .iter()
+            .map(|alias| alias_to_coauthor.get(alias).unwrap().to_string())
+            .collect()),
         1 => Err(format!("coauthor not found: {}", remaining_aliases[0])),
-        _ => Err(format!("coauthors not found: {}", remaining_aliases.join(","))),
+        _ => Err(format!(
+            "coauthors not found: {}",
+            remaining_aliases.join(",")
+        )),
     }
 }
 
@@ -214,19 +236,21 @@ fn get_coauthors_from_log(
         let signature = commit.author();
         let email = String::from_utf8_lossy(signature.email_bytes());
         let name = String::from_utf8_lossy(signature.name_bytes());
-        let name_lower = name.to_lowercase();
-        let name_parts : Vec<&str> = name_lower.split_whitespace().collect();
-        remaining_aliases.retain(|alias| {
-            let found = name_parts.contains(&alias.as_str()) || name_lower.eq(alias);
-            if found {
-                alias_to_coauthor.insert(
-                    alias.clone(),
-                    format!("Co-authored-by: {} <{}>", name, email),
-                );
-            }
+        let coauthor_parts = parse_name_and_email(&name, &email);
+        if coauthor_parts.is_some() {
+            let coauthor_parts = coauthor_parts.unwrap();
+            remaining_aliases.retain(|alias| {
+                let found = coauthor_parts.matches(alias);
+                if found {
+                    alias_to_coauthor.insert(
+                        alias.clone(),
+                        format!("Co-authored-by: {} <{}>", name, email),
+                    );
+                }
 
-            !found
-        });
+                !found
+            });
+        }
 
         let message = commit.message();
         if message.is_none() {
@@ -236,18 +260,20 @@ fn get_coauthors_from_log(
         let lines: Vec<&str> = message.unwrap().lines().collect();
         lines
             .iter()
-            .filter(|&line| line.starts_with("Co-authored-by:") && line.contains('<'))
+            .filter(|&line| line.starts_with("Co-authored-by:"))
             .for_each(|line| {
-                let name_lower = line[15..].split('<').next().unwrap().trim().to_lowercase();
-                let name_parts : Vec<&str> = name_lower.split_whitespace().collect();
-                remaining_aliases.retain(|alias| {
-                    let found = name_parts.contains(&alias.as_str()) || name_lower.eq(alias);
-                    if found {
-                        alias_to_coauthor.insert(alias.clone(), line.to_string());
-                    }
+                let coauthor_parts = parse_coauthor(&line[15..]);
+                if coauthor_parts.is_some() {
+                    let coauthor_parts = coauthor_parts.unwrap();
+                    remaining_aliases.retain(|alias| {
+                        let found = coauthor_parts.matches(alias);
+                        if found {
+                            alias_to_coauthor.insert(alias.clone(), line.to_string());
+                        }
 
-                    !found
-                });
+                        !found
+                    });
+                }
             });
     }
     Ok(())
@@ -365,4 +391,38 @@ fn without_duplicates(vec: Vec<String>) -> Vec<String> {
         }
     }
     result
+}
+
+fn parse_coauthor(input: &str) -> Option<CoauthorParts> {
+    let parts: Vec<&str> = input.split('<').collect();
+    if parts.len() != 2 {
+        return None;
+    }
+
+    let name = parts[0].trim().to_string();
+    let email = parts[1].trim_end_matches('>').to_string();
+    parse_name_and_email(&name, &email)
+}
+
+fn parse_name_and_email(name: &str, email: &str) -> Option<CoauthorParts> {
+    let name = name.to_lowercase();
+    let email = email.to_lowercase();
+    let name_parts = name
+        .split_whitespace()
+        .map(|s| s.to_lowercase().to_string())
+        .collect();
+
+    let email_parts: Vec<&str> = email.split('@').collect();
+    if email_parts.len() != 2 {
+        return None;
+    }
+
+    let email_local = email_parts[0].to_string();
+
+    Some(CoauthorParts {
+        name,
+        name_parts,
+        email,
+        email_local,
+    })
 }
