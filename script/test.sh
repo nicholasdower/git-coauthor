@@ -107,6 +107,16 @@ test "list multiple coauthors again"
 printf 'no coauthors\n' > expected
 test "delete multiple coauthors"
 
+./git-coauthor -d foo > /dev/null
+
+./git-coauthor foo foo > actual 2>&1
+printf 'Co-authored-by: Foo <foo@foo.com>\n' > expected
+test "add duplicate coauthors at one time"
+
+./git-coauthor foo > actual 2>&1
+printf 'Co-authored-by: Foo <foo@foo.com>\n' > expected
+test "add duplicate coauthor"
+
 git commit --amend -m 'foo' --quiet
 
 git config --add coauthor.foo 'Other Foo <foo@foo.com>'
