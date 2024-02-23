@@ -17,6 +17,7 @@ on:
       - '!script/manpage.sh'
       - '!script/readme.sh'
       - '!script/release.sh'
+      - '!script/version.sh'
       - '!LICENSE.txt'
       - '!.github/dependabot.yml'
       - '!.github/workflows/release.yml'
