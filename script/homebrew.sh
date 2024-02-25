@@ -4,17 +4,21 @@ set -e
 set -u
 set -o pipefail
 
-if [ $# -ne 1 ]; then
-  echo "usage: $0 <version>" >&2
+if [ $# -ne 3 ]; then
+  echo "usage: $0 <binary> <version> <description>" >&2
   exit 1
 fi
 
-version="$1"
+binary="$1"
+version="$2"
+description="$3"
+
+class=$(echo $binary | awk -F"-" '{for (i=1; i<=NF; i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1' OFS="")
 
 function generate_sha {
   version="$1"
   name="$2"
-  file="git-coauthor-$version.$name.bottle.1.tar.gz"
+  file="$binary-$version.$name.bottle.1.tar.gz"
   if [ ! -f "$file" ]; then
     echo "error: $file not found" >&2
     exit 1
@@ -23,7 +27,7 @@ function generate_sha {
   echo $sha
 }
 
-release_file="git-coauthor-$version.tar.gz"
+release_file="$binary-$version.tar.gz"
 if [ ! -f "$release_file" ]; then
   echo "error: $release_file not found" >&2
   exit 1
@@ -37,19 +41,19 @@ arm64_sonoma=`generate_sha "$version" "arm64_sonoma"`
 arm64_monterey=`generate_sha "$version" "arm64_monterey"`
 arm64_ventura=`generate_sha "$version" "arm64_ventura"`
 
-cat << EOF > Formula/git-coauthor.rb
-class GitCoauthor < Formula
-  desc "List or add Git coauthors"
-  homepage "https://github.com/nicholasdower/git-coauthor"
+cat << EOF > Formula/$binary.rb
+class $class < Formula
+  desc "$description"
+  homepage "https://github.com/nicholasdower/$binary"
   license "MIT"
   version "$version"
 
-  url "https://github.com/nicholasdower/git-coauthor/releases/download/v$version/$release_file"
+  url "https://github.com/nicholasdower/$binary/releases/download/v$version/$release_file"
   sha256 "$release"
 
   bottle do
     rebuild 1
-    root_url "https://github.com/nicholasdower/git-coauthor/releases/download/v$version/"
+    root_url "https://github.com/nicholasdower/$binary/releases/download/v$version/"
     sha256 cellar: :any, monterey: "$monterey"
     sha256 cellar: :any, ventura: "$ventura"
     sha256 cellar: :any, sonoma: "$sonoma"
@@ -62,11 +66,11 @@ class GitCoauthor < Formula
 
   def install
     system "cargo", "install", *std_cargo_args
-    man1.install "man/git-coauthor.1"
+    man1.install "man/$binary.1"
   end
 
   test do
-    assert_match "git-coauthor", shell_output("#{bin}/git-coauthor --version")
+    assert_match "$binary", shell_output("#{bin}/$binary --version")
   end
 end
 EOF

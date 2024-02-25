@@ -76,4 +76,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_PAT: ${{ secrets.HOMEBREW_PAT }}
-        run: ./script/release.sh ${{ inputs.version }}
+        run: ./script/release.sh git-coauthor ${{ inputs.version }} "List, add or delete Git coauthors"
