@@ -53,7 +53,7 @@ Examples
 
     Delete all coauthors from the HEAD commit:
 
-        git coauthor -d
+        git coauthor -d\
 ";
 
 #[derive(Parser)]
