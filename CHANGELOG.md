@@ -1,3 +1,7 @@
+## 6.1.1
+
+- Update help and man page.
+
 ## 6.1.0
 
 - Add a blank line between commit message body and coauthors section.

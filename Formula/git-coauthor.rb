@@ -2,20 +2,20 @@ class GitCoauthor < Formula
   desc "List, add or delete Git coauthors"
   homepage "https://github.com/nicholasdower/git-coauthor"
   license "MIT"
-  version "6.1.0"
+  version "6.1.1"
 
-  url "https://github.com/nicholasdower/git-coauthor/releases/download/v6.1.0/git-coauthor-6.1.0.tar.gz"
-  sha256 "27f88c2047aa817b21d71e0514bdf74b663ab8a405364f4751fbbe78ad64c484"
+  url "https://github.com/nicholasdower/git-coauthor/releases/download/v6.1.1/git-coauthor-6.1.1.tar.gz"
+  sha256 "457b25127f7e585044966a6e87985bf3cfaeeee2dfa1d6b7ba4e3a254bf62b89"
 
   bottle do
     rebuild 1
-    root_url "https://github.com/nicholasdower/git-coauthor/releases/download/v6.1.0/"
-    sha256 cellar: :any, monterey: "595694a5fe05133cd4c5ab190f518a5187f0f0fe5fdc0c2632c486e0e1452a77"
-    sha256 cellar: :any, ventura: "595694a5fe05133cd4c5ab190f518a5187f0f0fe5fdc0c2632c486e0e1452a77"
-    sha256 cellar: :any, sonoma: "595694a5fe05133cd4c5ab190f518a5187f0f0fe5fdc0c2632c486e0e1452a77"
-    sha256 cellar: :any, arm64_sonoma: "ccf9e086c2d82b8150d6bfbbcc04b1d0df39407bda9ff745c78522da7d94fa09"
-    sha256 cellar: :any, arm64_monterey: "ccf9e086c2d82b8150d6bfbbcc04b1d0df39407bda9ff745c78522da7d94fa09"
-    sha256 cellar: :any, arm64_ventura: "ccf9e086c2d82b8150d6bfbbcc04b1d0df39407bda9ff745c78522da7d94fa09"
+    root_url "https://github.com/nicholasdower/git-coauthor/releases/download/v6.1.1/"
+    sha256 cellar: :any, monterey: "dcc4b8a2f1e05e211231ce26a55c78c07ccfe38eab52db97e04ac9727c23ef87"
+    sha256 cellar: :any, ventura: "dcc4b8a2f1e05e211231ce26a55c78c07ccfe38eab52db97e04ac9727c23ef87"
+    sha256 cellar: :any, sonoma: "dcc4b8a2f1e05e211231ce26a55c78c07ccfe38eab52db97e04ac9727c23ef87"
+    sha256 cellar: :any, arm64_sonoma: "8cabe810804a31cc034ae350d5bb3ea0da3ebd9b80055b9ed3139944c8315386"
+    sha256 cellar: :any, arm64_monterey: "8cabe810804a31cc034ae350d5bb3ea0da3ebd9b80055b9ed3139944c8315386"
+    sha256 cellar: :any, arm64_ventura: "8cabe810804a31cc034ae350d5bb3ea0da3ebd9b80055b9ed3139944c8315386"
   end
 
   depends_on "rust" => :build

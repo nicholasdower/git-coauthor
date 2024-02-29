@@ -2,7 +2,7 @@
 
 [package]
 name = "git-coauthor"
-version = "6.1.0"
+version = "6.1.1"
 edition = "2021"
 authors = ["Nick Dower <nicholasdower@gmail.com>"]
 
