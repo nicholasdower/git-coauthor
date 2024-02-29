@@ -14,8 +14,8 @@ List, add or delete Git coauthors
 Description
 
     Git coauthor manages \"Co-authored-by\" lines on the HEAD commit. Coauthors
-    are specified as name or email details from the repository's commit history
-    or as aliases configured via `git config`.
+    may be specified as name or email details from the repository's commit history
+    or as aliases configured via Git config.
 
 Options
 
@@ -43,13 +43,13 @@ Examples
 
         git coauthor Joe
         git coauthor Joe Jim
-        git coauthor \"Joe Blow\" \"Jim Bob\"
+        git coauthor 'Joe Blow' 'Jim Bob'
 
     Delete coauthors from the HEAD commit:
 
         git coauthor -d Joe
         git coauthor -d Joe Jim
-        git coauthor -d \"Joe Blow\" \"Jim Bob\"
+        git coauthor -d 'Joe Blow' 'Jim Bob'
 
     Delete all coauthors from the HEAD commit:
 
