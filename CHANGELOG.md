@@ -1,3 +1,7 @@
+## 6.1.0
+
+- Add a blank line between commit message body and coauthors section.
+
 ## 6.0.0
 
 - Coauthors can now be specified using names or emails from Git log.
