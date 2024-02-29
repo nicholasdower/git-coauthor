@@ -302,7 +302,9 @@ fn add_to_commit(repo: &Repository, aliases: Vec<String>) -> Result<Vec<String>,
         .filter(|&coauthor| !existing.contains(coauthor))
         .map(|coauthor| coauthor.to_string())
         .collect();
-    if lines.len() == 1 {
+    if (lines.len() == 1)
+        || (lines.len() > 2 && !lines.last().unwrap().starts_with("Co-authored-by:"))
+    {
         lines.push("".to_string());
     }
     lines.extend(new_coauthors.clone());

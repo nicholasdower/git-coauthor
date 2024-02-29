@@ -197,3 +197,16 @@ test "coauthor by previous co-author email local"
 ./git-coauthor Joe Jim > actual 2>&1
 printf 'Co-authored-by: Joe Blow <joeblow@momo.com>\nCo-authored-by: Jim Bob <jimbob@bobo.com>\n' > expected
 test "coauthor by previous co-authors and authors"
+
+touch mop
+git add mop
+git commit -a -m Mop -m Moop --quiet
+./git-coauthor foo > /dev/null 2>&1
+git log -n 1 --pretty=format:"%b" > actual 2>&1
+printf 'Moop\n\nCo-authored-by: Foo <foo@foo.com>\n' > expected
+test "add coauthor with commit body"
+
+./git-coauthor bar > /dev/null 2>&1
+git log -n 1 --pretty=format:"%b" > actual 2>&1
+printf 'Moop\n\nCo-authored-by: Foo <foo@foo.com>\nCo-authored-by: Bar <bar@bar.com>\n' > expected
+test "add coauthor with commit body and existing coauthors"
