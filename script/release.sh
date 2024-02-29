@@ -80,7 +80,7 @@ echo "Update CHANGELOG.md"
 ./script/changelog.sh "$version"
 
 echo "Update README.md"
-./script/readme.sh "target/x86_64-apple-darwin/release" "$binary"
+./script/readme.sh "target/release" "$binary"
 
 git config user.email "nicholasdower@gmail.com"
 git config user.name "$binary-ci"
