@@ -291,7 +291,9 @@ fn add_to_commit(repo: &Repository, aliases: Vec<String>) -> Result<Vec<String>,
         Some(message) => Ok(message),
         None => return Err("failed to read commit message".to_string()),
     };
-    let mut lines: Vec<String> = message?.lines().map(|line| line.to_string()).collect();
+    let (mut lines, end_lines) = split_commit_message(message?);
+    println!("start: {}", lines.len());
+    println!("end: {}", end_lines.len());
     let mut existing: Vec<String> = lines
         .iter()
         .filter(|&line| line.starts_with("Co-authored-by:"))
@@ -308,6 +310,7 @@ fn add_to_commit(repo: &Repository, aliases: Vec<String>) -> Result<Vec<String>,
         lines.push("".to_string());
     }
     lines.extend(new_coauthors.clone());
+    lines.extend(end_lines);
     existing.extend(new_coauthors);
     let new_message = format!("{}\n", lines.join("\n"));
 
@@ -427,4 +430,31 @@ fn parse_name_and_email(name: &str, email: &str) -> Option<CoauthorParts> {
         email,
         email_local,
     })
+}
+
+// Splts a commit message into two lists of lines, the first list is guaranteed to include any "Co-authored-by: " lines.
+fn split_commit_message(s: &str) -> (Vec<String>, Vec<String>) {
+    let lines: Vec<&str> = s.lines().collect();
+    println!("lines: {}", lines.len());
+    let mut co_authored_index: Option<usize> = None;
+
+    // Iterate in reverse to find the last "Co-authored-by: " line
+    for (i, line) in lines.iter().enumerate().rev() {
+        if line.starts_with("Co-authored-by: ") {
+            co_authored_index = Some(i);
+            break;
+        }
+    }
+
+    match co_authored_index {
+        Some(index) => {
+            let (first_part, second_part) = lines.split_at(index);
+            let first_part: Vec<String> =
+                first_part.to_vec().iter().map(|s| s.to_string()).collect();
+            let second_part: Vec<String> =
+                second_part.to_vec().iter().map(|s| s.to_string()).collect();
+            (first_part, second_part)
+        }
+        None => (lines.iter().map(|s| s.to_string()).collect(), Vec::new()),
+    }
 }

@@ -79,7 +79,7 @@ test "list one coauthor"
 
 ./git-coauthor bar > actual 2>&1
 printf 'Co-authored-by: Foo <foo@foo.com>\nCo-authored-by: Bar <bar@bar.com>\n' > expected
-test "list one coauthor"
+test "add a second coauthor"
 
 ./git-coauthor -d foo > actual 2>&1
 printf 'Co-authored-by: Bar <bar@bar.com>\n' > expected
