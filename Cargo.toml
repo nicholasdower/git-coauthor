@@ -8,4 +8,4 @@ authors = ["Nick Dower <nicholasdower@gmail.com>"]
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
-git2 = "0.19"
+git2 = "0.20"
